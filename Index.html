@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЗЕНИТ — игровой каталог</title>
+<style>
+/* ЗЕНИТ — однофайловое приложение, готовое к размещению на GitHub Pages */
+:root{
+  --bg:#0d0d11;
+  --panel:#15151a;
+  --panel-2:#1d1d24;
+  --panel-3:#24242d;
+  --line:#2a2a34;
+  --line-hover:#3e3e4d;
+  --text:#eeeef2;
+  --muted:#8e8e9a;
+  --accent:#9b7bff;
+  --accent-hover:#ab8fff;
+  --accent-soft:rgba(155,123,255,.14);
+  --blue:#5aa0ff;
+  --green:#52b765;
+  --green-soft:rgba(82,183,101,.15);
+  --red:#e86464;
+  --red-soft:rgba(232,100,100,.14);
+  --shadow:0 16px 40px rgba(0,0,0,.45);
+
+  /* Умеренные, аккуратные скругления */
+  --r-xs:4px;
+  --r-sm:6px;
+  --r-md:8px;
+  --r-lg:10px;
+  --r-xl:12px;
+  --r-pill:8px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  font-size:14px;min-height:100vh;padding-bottom:34px;
+  animation:fade .35s ease both;
+}
+.sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+#i-mark,#i-bolt{fill:currentColor;stroke:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── Верхняя панель ───────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  height:60px;padding:0 22px;
+  background:rgba(18,18,23,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  display:flex;align-items:center;gap:10px;font-weight:800;
+  font-size:19px;letter-spacing:1.2px;cursor:pointer;user-select:none;
+}
+.brand-mark{width:24px;height:24px;color:var(--accent)}
+.top-actions{display:flex;align-items:center;gap:10px}
+
+.search{position:relative;display:flex;align-items:center}
+.search input{
+  width:240px;height:36px;padding:0 36px 0 13px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-pill);
+  color:var(--text);font-size:13px;outline:none;
+  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{
+  border-color:var(--accent);background:var(--panel-3);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+.search svg{position:absolute;right:11px;color:var(--muted);width:16px;height:16px;pointer-events:none}
+
+.icon-btn{
+  position:relative;width:36px;height:36px;background:var(--panel-2);
+  border:1px solid var(--line);color:#c7c7cf;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r-sm);
+  transition:color .2s ease,background .2s ease,border-color .2s ease,transform .15s ease;
+}
+.icon-btn:hover{color:var(--text);background:var(--panel-3);border-color:var(--line-hover)}
+.icon-btn:active{transform:scale(.95)}
+.badge-dot{
+  position:absolute;top:7px;right:7px;width:7px;height:7px;
+  background:var(--accent);border-radius:50%;
+  box-shadow:0 0 0 2px var(--panel-2);
+}
+
+.admin-btn{
+  display:none;align-items:center;gap:7px;height:36px;padding:0 13px;
+  background:var(--accent-soft);border:1px solid rgba(155,123,255,.45);
+  border-radius:var(--r-sm);color:var(--accent);
+  font-size:12px;font-weight:700;letter-spacing:.3px;cursor:pointer;
+  transition:background .2s ease,color .2s ease,transform .15s ease;
+}
+.admin-btn:hover{background:var(--accent);color:#0d0d11}
+.admin-btn:active{transform:scale(.97)}
+.admin-btn.show{display:flex}
+.admin-btn svg{width:15px;height:15px}
+
+/* Кнопка входа / профиль пользователя в шапке */
+.account-pill{
+  display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;
+  background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-pill);color:var(--text);
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:border-color .2s ease,background .2s ease,transform .15s ease;
+}
+.account-pill:hover{border-color:var(--accent);background:var(--panel-3)}
+.account-pill:active{transform:scale(.97)}
+.account-pill.logged{padding-left:6px}
+.avatar-circle{
+  width:24px;height:24px;border-radius:var(--r-xs);
+  background:linear-gradient(135deg,var(--accent),#6d4de0);
+  color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.account-pill.is-admin .avatar-circle{
+  background:linear-gradient(135deg,#52b765,#2f8f46);
+}
+.account-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Основная сетка ────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.tabs{
+  display:flex;align-items:center;gap:6px;margin-top:16px;padding:6px 8px;
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-md);overflow-x:auto;animation:rise .4s ease both;
+}
+.tab{
+  position:relative;display:flex;align-items:center;gap:7px;background:none;
+  border:0;color:#aaaab5;font-size:12px;font-weight:700;letter-spacing:.4px;
+  cursor:pointer;height:34px;padding:0 13px;border-radius:var(--r-sm);white-space:nowrap;
+  transition:color .2s ease,background .2s ease;
+}
+.tab:hover{color:var(--text);background:var(--panel-2)}
+.tab.active{color:var(--accent);background:var(--accent-soft)}
+.tab svg{width:15px;height:15px}
+.tab .caret{width:12px;height:12px}
+
+.layout{display:grid;grid-template-columns:1fr 256px;gap:16px;margin-top:16px}
+.content{display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* ── Блоки и карточки ──────────────────────────── */
+.block,.side-block{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-lg);animation:rise .45s ease both;
+}
+.block{padding:18px 18px 15px}
+.content .block:nth-child(2){animation-delay:.05s}
+.sidebar .side-block:nth-child(2){animation-delay:.05s}
+
+.section-head{margin-bottom:16px}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.section-head h2{
+  display:flex;align-items:center;gap:9px;
+  font-size:15px;font-weight:800;letter-spacing:.4px;
+}
+.section-head h2::before{
+  content:"";display:inline-block;width:4px;height:15px;
+  background:var(--accent);border-radius:3px;
+}
+.accent-link{
+  color:var(--blue);font-size:11px;font-weight:700;
+  text-decoration:none;letter-spacing:.3px;padding:4px 10px;
+  border-radius:var(--r-sm);background:rgba(90,160,255,.1);
+  transition:background .2s ease,opacity .2s ease;
+}
+.accent-link:hover{background:rgba(90,160,255,.18)}
+.sub{color:var(--muted);font-size:12px;margin-top:5px}
+
+.carousel{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:192px}
+.empty-card{
+  border:1px dashed var(--line);border-radius:var(--r-md);background:var(--panel-2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  padding:12px;color:#52525e;
+  transition:border-color .25s ease,background .25s ease,transform .25s ease;
+}
+.empty-card:hover{border-color:var(--line-hover);background:var(--panel-3);transform:translateY(-2px)}
+.empty-card svg{width:20px;height:20px;opacity:.45}
+.empty-card span{font-size:10px;font-weight:700;letter-spacing:.7px}
+
+.game-card{
+  border:1px solid var(--line);background:var(--panel-2);border-radius:var(--r-md);
+  overflow:hidden;transition:border-color .25s ease,transform .25s ease,box-shadow .25s ease;
+  display:flex;flex-direction:column;cursor:pointer;
+}
+.game-card:hover{
+  border-color:var(--accent);transform:translateY(-3px);
+  box-shadow:0 10px 24px rgba(0,0,0,.32);
+}
+.game-art{
+  height:126px;background:var(--panel-3) center/cover no-repeat;
+  display:flex;align-items:flex-end;justify-content:flex-start;padding:8px;
+}
+.game-badge{
+  background:var(--accent);color:#0d0d11;font-size:9px;
+  font-weight:800;letter-spacing:.5px;padding:3px 7px;border-radius:var(--r-xs);
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+.game-meta{padding:10px;display:flex;flex-direction:column;gap:5px;flex:1}
+.game-title{
+  font-size:12px;font-weight:700;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.game-date{font-size:11px;color:var(--muted)}
+.game-foot{
+  display:flex;justify-content:space-between;align-items:center;gap:6px;
+  font-size:11px;margin-top:auto;padding-top:4px;
+}
+.game-rating{
+  color:var(--green);font-weight:800;background:var(--green-soft);
+  padding:2px 6px;border-radius:var(--r-xs);
+}
+.game-file-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  color:var(--accent);font-weight:700;font-size:10px;
+  background:var(--accent-soft);padding:2px 7px;border-radius:var(--r-xs);
+}
+.game-file-tag.empty{color:var(--muted);background:var(--panel-3)}
+.game-file-tag svg{width:11px;height:11px}
+
+.rail-foot{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:16px}
+.dots{display:flex;align-items:center;gap:6px}
+.dots i{
+  width:6px;height:6px;border-radius:50%;background:#3c3c47;
+  display:block;cursor:pointer;
+  transition:background .25s ease,width .25s ease,border-radius .25s ease;
+}
+.dots i.on{background:var(--accent);width:16px;border-radius:4px}
+.arrows{display:flex;align-items:center;gap:8px}
+.arrow{
+  width:30px;height:30px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--panel-2);color:#a5a5b2;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+  transition:color .2s ease,border-color .2s ease,background .2s ease,transform .15s ease;
+}
+.arrow:hover{color:var(--text);border-color:var(--accent);background:var(--panel-3)}
+.arrow:active{transform:scale(.92)}
+.arrow svg{width:14px;height:14px}
+.arrow:first-child svg{transform:rotate(180deg)}
+
+/* ── Боковая панель ────────────────────────────── */
+.sidebar{display:flex;flex-direction:column;gap:16px}
+.side-block{padding:16px}
+.side-block h3{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:800;letter-spacing:.6px;margin-bottom:12px;
+}
+.side-block h3::before{
+  content:"";display:inline-block;width:3px;height:12px;
+  background:var(--accent);border-radius:3px;
+}
+.nav-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.nav-list li{
+  display:flex;align-items:center;gap:10px;color:#b0b0bc;
+  font-size:12px;padding:7px 9px;border-radius:var(--r-sm);cursor:pointer;
+  transition:background .2s ease,color .2s ease,transform .15s ease;
+}
+.nav-list li:hover{background:var(--panel-2);color:var(--text);transform:translateX(2px)}
+.nav-list svg{width:15px;height:15px;color:#80808e}
+
+.genre-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.genre-grid div{
+  display:flex;align-items:center;gap:7px;color:#b0b0bc;
+  font-size:12px;padding:7px 8px;border-radius:var(--r-sm);cursor:pointer;
+  transition:background .2s ease,color .2s ease;
+}
+.genre-grid div:hover{background:var(--panel-2);color:var(--text)}
+.genre-grid svg{width:14px;height:14px;color:#80808e}
+
+/* ── Модальные окна ────────────────────────────── */
+.overlay{
+  position:fixed;inset:0;background:rgba(6,6,9,.78);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:16px;z-index:50;
+  animation:fade .2s ease both;
+}
+.overlay.open{display:flex}
+.modal{
+  width:100%;max-width:440px;max-height:90vh;overflow:auto;
+  background:var(--panel);border:1px solid var(--line-hover);
+  border-radius:var(--r-xl);box-shadow:var(--shadow);
+  animation:pop .24s ease both;
+}
+.modal.wide{max-width:920px}
+
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 20px;border-bottom:1px solid var(--line);
+}
+.modal-head-title{display:flex;align-items:center;gap:10px}
+.modal-icon{
+  width:34px;height:34px;border-radius:var(--r-sm);
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-head h3{font-size:15px;font-weight:800;letter-spacing:.3px}
+.modal-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.close{
+  width:32px;height:32px;border-radius:var(--r-sm);background:var(--panel-2);
+  border:1px solid var(--line);color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s ease,background .2s ease,border-color .2s ease;
+}
+.close:hover{color:var(--text);background:var(--panel-3);border-color:var(--line-hover)}
+
+/* Сегментированные переключатели вкладок */
+.seg-tabs{
+  display:flex;gap:6px;padding:5px;margin:16px 20px 0;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
+}
+.seg-tabs button{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:none;border:0;border-radius:var(--r-sm);
+  color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.3px;
+  padding:9px 12px;cursor:pointer;
+  transition:color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.seg-tabs button:hover{color:var(--text)}
+.seg-tabs button.active{
+  background:var(--panel-3);color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+.seg-tabs button.active svg{color:var(--accent)}
+.seg-tabs button svg{width:15px;height:15px}
+
+.pane{padding:18px 20px 20px}
+.pane.hidden{display:none}
+
+/* Поля ввода */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.field label{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px;
+}
+.input-wrap{position:relative;display:flex;align-items:center}
+.field input,.field select{
+  width:100%;height:38px;padding:0 12px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);color:var(--text);
+  font-size:13px;outline:none;
+  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.input-wrap input{padding-right:38px}
+.field input:focus,.field select:focus{
+  border-color:var(--accent);background:var(--panel-3);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+.eye-btn{
+  position:absolute;right:6px;width:28px;height:28px;border:0;
+  background:none;color:var(--muted);cursor:pointer;border-radius:var(--r-xs);
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s ease,background .2s ease;
+}
+.eye-btn:hover{color:var(--text);background:var(--panel-2)}
+.eye-btn svg{width:16px;height:16px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px}
+
+/* Кнопки */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:38px;padding:0 16px;background:var(--accent);border:1px solid var(--accent);
+  border-radius:var(--r-sm);color:#0d0d11;font-size:12px;font-weight:800;
+  letter-spacing:.3px;cursor:pointer;
+  transition:background .2s ease,transform .15s ease,box-shadow .2s ease;
+}
+.btn:hover{background:var(--accent-hover);box-shadow:0 4px 14px rgba(155,123,255,.3)}
+.btn:active{transform:scale(.98)}
+.btn.full{width:100%}
+.btn.ghost{
+  background:var(--panel-2);border-color:var(--line);color:var(--text);
+}
+.btn.ghost:hover{
+  background:var(--panel-3);border-color:var(--accent);color:var(--accent);box-shadow:none;
+}
+.btn.danger{
+  background:var(--red-soft);border-color:rgba(232,100,100,.35);color:var(--red);
+}
+.btn.danger:hover{background:var(--red);color:#fff;box-shadow:none}
+.btn.danger.confirming{background:var(--red);color:#fff;border-color:var(--red)}
+.btn svg{width:15px;height:15px}
+.mini{height:30px;padding:0 11px;font-size:11px;border-radius:var(--r-xs)}
+.mini svg{width:13px;height:13px}
+
+.row-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+
+/* Карточка профиля при активной сессии */
+.profile-card{
+  display:flex;align-items:center;gap:14px;padding:16px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
+  margin-bottom:14px;
+}
+.profile-avatar{
+  width:46px;height:46px;border-radius:var(--r-md);flex:none;
+  background:linear-gradient(135deg,var(--accent),#6d4de0);
+  color:#fff;font-size:16px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.profile-card.is-admin .profile-avatar{
+  background:linear-gradient(135deg,#52b765,#2f8f46);
+}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.profile-email{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+
+/* Зона загрузки файлов (обложка и архив/торрент) */
+.file-drop{
+  position:relative;display:flex;align-items:center;gap:10px;
+  min-height:42px;padding:7px 11px;
+  background:var(--panel-2);border:1px dashed var(--line-hover);
+  border-radius:var(--r-sm);cursor:pointer;
+  transition:border-color .2s ease,background .2s ease;
+}
+.file-drop:hover{border-color:var(--accent);background:var(--panel-3)}
+.file-drop.has-file{border-style:solid;border-color:rgba(155,123,255,.5)}
+.file-drop input[type="file"]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.file-drop-icon{
+  width:28px;height:28px;border-radius:var(--r-xs);flex:none;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.file-drop-icon svg{width:15px;height:15px}
+.file-drop-info{flex:1;min-width:0}
+.file-drop-name{
+  font-size:12px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.file-drop-hint{font-size:10px;color:var(--muted);margin-top:1px}
+.file-clear{
+  position:relative;z-index:2;width:24px;height:24px;border:0;
+  border-radius:var(--r-xs);background:var(--panel-3);color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:color .2s ease,background .2s ease;
+}
+.file-clear:hover{color:var(--red);background:var(--red-soft)}
+.file-clear svg{width:13px;height:13px}
+
+/* ── Админ-панель: статистика, редактор, превью ── */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  padding:16px 20px 0;
+}
+.stat-box{
+  background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:11px 14px;
+}
+.stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.admin-editor-grid{
+  display:grid;grid-template-columns:1fr 205px;gap:18px;
+  padding:16px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-lg);margin-bottom:18px;
+}
+.admin-editor-grid .field input,
+.admin-editor-grid .field select,
+.admin-editor-grid .file-drop{background:var(--panel)}
+.preview-box{display:flex;flex-direction:column;gap:8px}
+.preview-label{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--muted)}
+.preview-box .game-card{cursor:default;transform:none;box-shadow:none}
+
+.toolbar-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:12px;flex-wrap:wrap;
+}
+.filter-pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill-btn{
+  height:32px;padding:0 12px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-sm);color:var(--muted);font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .2s ease;
+}
+.pill-btn:hover{color:var(--text);border-color:var(--line-hover)}
+.pill-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+.search-inline{
+  height:34px;min-width:220px;flex:1;max-width:300px;padding:0 12px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--text);font-size:12px;outline:none;
+}
+.search-inline:focus{border-color:var(--accent)}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.list-row{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
+  font-size:12px;transition:border-color .2s ease;
+}
+.list-row:hover{border-color:var(--line-hover)}
+.list-thumb{
+  width:38px;height:38px;border-radius:var(--r-sm);flex:none;
+  background:var(--panel-3) center/cover no-repeat;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:var(--accent);
+}
+.list-row .grow{flex:1;min-width:0}
+.list-row .name{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-row .sub{font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.role{
+  font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;
+  border-radius:var(--r-xs);background:var(--panel-3);border:1px solid var(--line);color:var(--muted);
+}
+.role.admin{background:var(--accent-soft);border-color:rgba(155,123,255,.4);color:var(--accent)}
+.row-btns{display:flex;align-items:center;gap:6px;flex:none}
+.empty-note{
+  color:var(--muted);font-size:12px;padding:22px;text-align:center;
+  background:var(--panel-2);border:1px dashed var(--line);border-radius:var(--r-md);
+}
+
+.hidden{display:none!important}
+
+/* Уведомления (Toast) */
+.toast{
+  position:fixed;right:20px;bottom:20px;background:var(--panel-2);
+  border:1px solid var(--line-hover);border-left:4px solid var(--accent);
+  border-radius:var(--r-md);box-shadow:var(--shadow);
+  color:var(--text);font-size:12px;font-weight:600;padding:12px 16px;z-index:80;
+  opacity:0;transform:translateY(10px);pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease;
+}
+.toast.show{opacity:1;transform:none}
+
+/* ── Светлая тема ──────────────────────────────── */
+body.light{
+  --bg:#f2f3f7;--panel:#ffffff;--panel-2:#f6f7fa;--panel-3:#eceef3;
+  --line:#dfe1e8;--line-hover:#c8ccd8;--text:#18181f;--muted:#6c6d7a;
+  --accent:#6d4de0;--accent-hover:#5c3dd0;--accent-soft:rgba(109,77,224,.11);
+  --blue:#2d74da;--shadow:0 16px 40px rgba(15,15,30,.12);
+}
+body.light .topbar{background:rgba(255,255,255,.92)}
+body.light .empty-card{color:#9a9ca8}
+body.light .nav-list li,body.light .genre-grid div,body.light .tab{color:#525360}
+body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .carousel{grid-template-columns:repeat(3,1fr)}
+  .search input{width:150px}
+  .grid2,.grid3,.admin-editor-grid{grid-template-columns:1fr}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .carousel{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:0 12px}
+  .search{display:none}
+  .list-row{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7zM12 7 7 9.5v5L12 17l5-2.5v-5z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9zM10 21h4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 7l4 5 5-8 5 8 4-5-2 13H5z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v3a3 3 0 0 0 3 3M17 6h3v3a3 3 0 0 1-3 3M12 14v4M8 21h8M9 18h6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM17 9a4 4 0 0 1 0 6"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5h7v15H4zM13 5h7v15h-7zM4 9h7M13 9h7"/></symbol>
+  <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 4 4v1c0 3-2 5-5 5-2 0-3-1-4-1s-2 1-4 1c-3 0-5-2-5-5v-1a4 4 0 0 1 4-4zM7 11v4M5 13h4M16 12h.01M18.5 14h.01"/></symbol>
+  <symbol id="i-vr" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="3"/><path d="M9 17l-1 3M15 17l1 3"/></symbol>
+  <symbol id="i-net" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12 5 17M12 12l7 5"/></symbol>
+  <symbol id="i-console" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="9" rx="3"/><path d="M7 12h3M8.5 10.5v3M16 11h.01M18 13h.01"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 13h18M12 9v12M12 9S9 4 7 6s5 3 5 3zm0 0s3-5 5-3-5 3-5 3z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2M14.5 8.5l2 2"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-sword" viewBox="0 0 24 24"><path d="M14 4h6v6L10 20l-6-6zM4 14l6 6M3 21l3-3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></symbol>
+  <symbol id="i-road" viewBox="0 0 24 24"><path d="M8 3 4 21M16 3l4 18M12 4v3M12 11v3M12 18v2"/></symbol>
+  <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M4 4h6v2a2 2 0 1 0 4 0V4h6v6h-2a2 2 0 1 0 0 4h2v6h-6v-2a2 2 0 1 0-4 0v2H4v-6h2a2 2 0 1 0 0-4H4z"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.8-3.6 5-5 8-5s6.2 1.4 8 5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 19c1.4-3 3.8-4.2 6-4.2s4.6 1.2 6 4.2"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5c2 0 3.6 1 4.5 3.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 20"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="brand" id="brandHome">
+    <svg class="brand-mark"><use href="#i-mark"/></svg>
+    <span>ЗЕНИТ</span>
+  </div>
+  <div class="top-actions">
+    <label class="search">
+      <input type="text" id="globalSearch" placeholder="Поиск по играм...">
+      <svg><use href="#i-search"/></svg>
+    </label>
+    <button class="admin-btn" id="adminBtn" title="Открыть панель администратора">
+      <svg><use href="#i-shield"/></svg>Админ-панель
+    </button>
+    <button class="icon-btn" id="themeToggle" title="Сменить тему">
+      <svg><use href="#i-moon"/></svg>
+    </button>
+    <button class="icon-btn" id="notifBtn" title="Уведомления">
+      <svg><use href="#i-bell"/></svg><span class="badge-dot"></span>
+    </button>
+    <button class="account-pill" id="accountBtn" title="Вход и профиль">
+      <svg><use href="#i-user"/></svg>
+      <span>Войти</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab active"><svg><use href="#i-bolt"/></svg>НОВИНКИ</button>
+    <button class="tab"><svg><use href="#i-refresh"/></svg>ОБНОВЛЕНИЯ</button>
+    <button class="tab"><svg><use href="#i-crown"/></svg>ТОП 250</button>
+    <button class="tab"><svg><use href="#i-trophy"/></svg>ИГРЫ ГОДА <svg class="caret"><use href="#i-caret"/></svg></button>
+  </nav>
+
+  <div class="layout">
+    <main class="content">
+      <section class="block">
+        <div class="section-head">
+          <div class="title-row">
+            <h2>ВЫШЕДШИЕ НОВИНКИ</h2>
+            <a href="#" class="accent-link">ОЖИДАЕМЫЕ РЕЛИЗЫ</a>
+          </div>
+          <p class="sub">Наиболее популярные релизы</p>
+        </div>
+        <div class="carousel" id="railReleases"></div>
+        <div class="rail-foot" data-rail="releases">
+          <div class="dots" data-dots="5"></div>
+          <div class="arrows">
+            <button class="arrow" data-dir="-1" aria-label="Назад"><svg><use href="#i-chev"/></svg></button>
+            <button class="arrow" data-dir="1" aria-label="Вперёд"><svg><use href="#i-chev"/></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="section-head">
+          <div class="title-row"><h2>ИГРЫ НА ПК ТОРРЕНТ</h2></div>
+          <p class="sub">Вышедшие новинки и обновления</p>
+        </div>
+        <div class="carousel" id="railPc"></div>
+        <div class="rail-foot" data-rail="pc">
+          <div class="dots" data-dots="5"></div>
+          <div class="arrows">
+            <button class="arrow" data-dir="-1" aria-label="Назад"><svg><use href="#i-chev"/></svg></button>
+            <button class="arrow" data-dir="1" aria-label="Вперёд"><svg><use href="#i-chev"/></svg></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <div class="side-block">
+        <h3>НАВИГАЦИЯ</h3>
+        <ul class="nav-list">
+          <li><svg><use href="#i-clock"/></svg>Ранний доступ</li>
+          <li><svg><use href="#i-speaker"/></svg>Русская озвучка</li>
+          <li><svg><use href="#i-monitor"/></svg>Для слабых ПК</li>
+          <li><svg><use href="#i-book"/></svg>Старые хиты</li>
+          <li><svg><use href="#i-gamepad"/></svg>Подборки геймпада</li>
+          <li><svg><use href="#i-vr"/></svg>VR игры</li>
+          <li><svg><use href="#i-net"/></svg>По сети и пирате</li>
+          <li><svg><use href="#i-console"/></svg>Порты с консолей</li>
+          <li><svg><use href="#i-gift"/></svg>GOG разработки</li>
+          <li><svg><use href="#i-shield"/></svg>Игры с Денуво</li>
+          <li><svg><use href="#i-key"/></svg>Активация игр</li>
+        </ul>
+      </div>
+      <div class="side-block">
+        <h3>ЖАНР</h3>
+        <div class="genre-grid">
+          <div><svg><use href="#i-bolt"/></svg>Экшен</div>
+          <div><svg><use href="#i-sword"/></svg>RPG</div>
+          <div><svg><use href="#i-grid"/></svg>Стратегии</div>
+          <div><svg><use href="#i-book"/></svg>Приключения</div>
+          <div><svg><use href="#i-grid"/></svg>Симуляторы</div>
+          <div><svg><use href="#i-road"/></svg>Гонки</div>
+          <div><svg><use href="#i-puzzle"/></svg>Игры</div>
+          <div><svg><use href="#i-puzzle"/></svg>Казуальные</div>
+          <div><svg><use href="#i-target"/></svg>Спортивные</div>
+          <div><svg><use href="#i-target"/></svg>Шутеры</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ── Модальное окно: Вход / Регистрация / Профиль ── -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">
+        <div class="modal-icon"><svg><use href="#i-user"/></svg></div>
+        <div>
+          <h3 id="authModalTitle">Вход в ЗЕНИТ</h3>
+          <div class="modal-sub" id="authModalSub">Авторизация и управление профилем</div>
+        </div>
+      </div>
+      <button class="close" data-close="authOverlay" aria-label="Закрыть"><svg><use href="#i-close"/></svg></button>
+    </div>
+
+    <!-- Вид 1: Гость (Вход / Регистрация) -->
+    <div id="authGuestView">
+      <div class="seg-tabs">
+        <button id="authTabLogin" class="active"><svg><use href="#i-key"/></svg>Вход</button>
+        <button id="authTabReg"><svg><use href="#i-plus"/></svg>Регистрация</button>
+      </div>
+
+      <form class="pane" id="authPaneLogin" novalidate>
+        <div class="field">
+          <label for="loginEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+          <input type="email" id="loginEmail" placeholder="name@mail.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="loginPass">ПАРОЛЬ</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPass" placeholder="Введите пароль" autocomplete="current-password">
+            <button type="button" class="eye-btn" data-eye="loginPass" title="Показать пароль">
+              <svg><use href="#i-eye"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn full">Войти в аккаунт</button>
+      </form>
+
+      <form class="pane hidden" id="authPaneReg" novalidate>
+        <div class="field">
+          <label for="regName">НИКНЕЙМ / ИМЯ</label>
+          <input type="text" id="regName" placeholder="Например, Алекс" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="regEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+          <input type="email" id="regEmail" placeholder="name@mail.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="regPass">ПАРОЛЬ (МИНИМУМ 4 СИМВОЛА)</label>
+          <div class="input-wrap">
+            <input type="password" id="regPass" placeholder="Придумайте пароль" autocomplete="new-password">
+            <button type="button" class="eye-btn" data-eye="regPass" title="Показать пароль">
+              <svg><use href="#i-eye"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn full">Создать аккаунт</button>
+      </form>
+    </div>
+
+    <!-- Вид 2: Авторизованный пользователь -->
+    <div class="pane hidden" id="authProfileView">
+      <div class="profile-card" id="profileCard">
+        <div class="profile-avatar" id="profileAvatar">ЖК</div>
+        <div class="profile-info">
+          <div class="profile-name">
+            <span id="profileName">Пользователь</span>
+            <span class="role" id="profileRoleBadge">ЮЗЕР</span>
+          </div>
+          <div class="profile-email" id="profileEmail">user@mail.com</div>
+        </div>
+      </div>
+
+      <div class="row-actions">
+        <button type="button" class="btn full hidden" id="profileOpenAdmin">
+          <svg><use href="#i-shield"/></svg>Открыть админ-панель
+        </button>
+        <button type="button" class="btn danger full" id="logoutBtn">
+          <svg><use href="#i-logout"/></svg>Выйти из аккаунта
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Модальное окно: Админ-панель ── -->
+<div class="overlay" id="adminOverlay">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div class="modal-head-title">
+        <div class="modal-icon"><svg><use href="#i-shield"/></svg></div>
+        <div>
+          <h3>Панель администратора</h3>
+          <div class="modal-sub">Управление каталогом релизов и правами пользователей</div>
+        </div>
+      </div>
+      <button class="close" data-close="adminOverlay" aria-label="Закрыть"><svg><use href="#i-close"/></svg></button>
+    </div>
+
+    <!-- Сводка по сайту -->
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-val" id="statTotalGames">0</div>
+        <div class="stat-lbl">Всего игр</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statReleases">0</div>
+        <div class="stat-lbl">Вышедшие новинки</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statPc">0</div>
+        <div class="stat-lbl">ПК торрент</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statUsers">0</div>
+        <div class="stat-lbl">Пользователей</div>
+      </div>
+    </div>
+
+    <div class="seg-tabs">
+      <button id="adminTabGames" class="active"><svg><use href="#i-gamepad"/></svg>Каталог игр</button>
+      <button id="adminTabUsers"><svg><use href="#i-users"/></svg>Пользователи</button>
+    </div>
+
+    <!-- Вкладка: Игры -->
+    <div class="pane" id="adminPaneGames">
+      <div class="admin-editor-grid">
+        <form id="gameForm" novalidate>
+          <div class="grid2">
+            <div class="field">
+              <label for="gSection">РАЗДЕЛ КАТАЛОГА</label>
+              <select id="gSection">
+                <option value="releases">Вышедшие новинки</option>
+                <option value="pc">Игры на ПК торрент</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="gTitle">НАЗВАНИЕ ИГРЫ *</label>
+              <input type="text" id="gTitle" placeholder="Например, S.T.A.L.K.E.R. 2">
+            </div>
+          </div>
+
+          <div class="grid3">
+            <div class="field">
+              <label for="gDate">ДАТА ВЫХОДА</label>
+              <input type="text" id="gDate" placeholder="17 нояб. 2026">
+            </div>
+            <div class="field">
+              <label for="gRating">РЕЙТИНГ</label>
+              <input type="text" id="gRating" placeholder="8.4">
+            </div>
+            <div class="field">
+              <label for="gBadge">ПЛАШКА (БЕЙДЖ)</label>
+              <input type="text" id="gBadge" placeholder="ПРЕМЬЕРА / REPACK">
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>ОБЛОЖКА ИГРЫ (ФАЙЛ)</label>
+              <div class="file-drop" id="coverDrop">
+                <input type="file" id="gImageFile" accept="image/*">
+                <div class="file-drop-icon"><svg><use href="#i-image"/></svg></div>
+                <div class="file-drop-info">
+                  <div class="file-drop-name" id="coverFileName">Выбрать изображение...</div>
+                  <div class="file-drop-hint" id="coverFileHint">PNG, JPG, WEBP</div>
+                </div>
+                <button type="button" class="file-clear hidden" id="clearCoverBtn" title="Убрать обложку">
+                  <svg><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>ФАЙЛ ИГРЫ (.ZIP / .TORRENT)</label>
+              <div class="file-drop" id="gameFileDrop">
+                <input type="file" id="gGameFile" accept=".zip,.torrent,.rar,.7z,application/zip,application/x-bittorrent">
+                <div class="file-drop-icon"><svg><use href="#i-upload"/></svg></div>
+                <div class="file-drop-info">
+                  <div class="file-drop-name" id="gameFileName">Загрузить .zip или .torrent...</div>
+                  <div class="file-drop-hint" id="gameFileHint">Архив или торрент-файл</div>
+                </div>
+                <button type="button" class="file-clear hidden" id="clearGameFileBtn" title="Убрать файл">
+                  <svg><use href="#i-close"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row-actions">
+            <button type="submit" class="btn" id="publishBtn">
+              <svg><use href="#i-plus"/></svg><span id="publishBtnText">Опубликовать игру</span>
+            </button>
+            <button type="button" class="btn ghost hidden" id="cancelEditBtn">Отменить правку</button>
+          </div>
+        </form>
+
+        <!-- Живое предпросмотр-превью карточки -->
+        <div class="preview-box">
+          <div class="preview-label">ПРЕДПРОСМОТР КАРТОЧКИ</div>
+          <div class="game-card" id="livePreviewCard"></div>
+        </div>
+      </div>
+
+      <div class="toolbar-row">
+        <div class="filter-pills" id="gameSectionFilter">
+          <button type="button" class="pill-btn active" data-sec="all">Все</button>
+          <button type="button" class="pill-btn" data-sec="releases">Новинки</button>
+          <button type="button" class="pill-btn" data-sec="pc">ПК торрент</button>
+        </div>
+        <input type="text" class="search-inline" id="adminGameSearch" placeholder="Фильтр по названию игры...">
+      </div>
+
+      <div class="list" id="adminGamesList"></div>
+    </div>
+
+    <!-- Вкладка: Пользователи -->
+    <div class="pane hidden" id="adminPaneUsers">
+      <div class="toolbar-row">
+        <div class="filter-pills" id="userRoleFilter">
+          <button type="button" class="pill-btn active" data-role-filter="all">Все</button>
+          <button type="button" class="pill-btn" data-role-filter="admin">Админы</button>
+          <button type="button" class="pill-btn" data-role-filter="user">Пользователи</button>
+        </div>
+        <input type="text" class="search-inline" id="userSearch" placeholder="Поиск по имени или почте...">
+      </div>
+      <div class="list" id="adminUsersList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ЗЕНИТ — клиентское состояние, авторизация и панель администратора */
+(function(){
+  'use strict';
+
+  var ADMIN_EMAIL = 'vovsenktzena@gmail.com';
+  var REMOTE = '';
+
+  var K_USERS = 'zenit_users_v1';
+  var K_GAMES = 'zenit_games_v1';
+  var K_SESSION = 'zenit_session_v1';
+  var K_THEME = 'zenit_theme_v1';
+
+  function read(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function write(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+    if(REMOTE){
+      fetch(REMOTE + '?key=' + encodeURIComponent(key), {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(value)
+      }).catch(function(){});
+    }
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function hash(s){
+    var h=5381, i;
+    for(i=0;i<s.length;i++) h=((h<<5)+h)^s.charCodeAt(i);
+    return (h>>>0).toString(36);
+  }
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function formatBytes(bytes){
+    if(!bytes) return '';
+    if(bytes < 1024) return bytes + ' Б';
+    if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' МБ';
+  }
+
+  /* Локальное хранилище бинарных файлов (обложек и .zip/.torrent) через IndexedDB с резервом в памяти */
+  var FileStore = (function(){
+    var dbPromise = null;
+    var mem = {};
+
+    function openDB(){
+      if(dbPromise) return dbPromise;
+      dbPromise = new Promise(function(resolve){
+        try{
+          var req = indexedDB.open('zenit_files_db', 1);
+          req.onupgradeneeded = function(e){
+            var db = e.target.result;
+            if(!db.objectStoreNames.contains('blobs')) db.createObjectStore('blobs');
+          };
+          req.onsuccess = function(e){ resolve(e.target.result); };
+          req.onerror = function(){ resolve(null); };
+        }catch(err){ resolve(null); }
+      });
+      return dbPromise;
+    }
+
+    return {
+      put: function(key, blob){
+        mem[key] = blob;
+        return openDB().then(function(db){
+          if(!db) return;
+          return new Promise(function(res){
+            try{
+              var tx = db.transaction('blobs', 'readwrite');
+              tx.objectStore('blobs').put(blob, key);
+              tx.oncomplete = function(){ res(); };
+              tx.onerror = function(){ res(); };
+            }catch(e){ res(); }
+          });
+        });
+      },
+      get: function(key){
+        if(mem[key]) return Promise.resolve(mem[key]);
+        return openDB().then(function(db){
+          if(!db) return null;
+          return new Promise(function(res){
+            try{
+              var tx = db.transaction('blobs', 'readonly');
+              var req = tx.objectStore('blobs').get(key);
+              req.onsuccess = function(){
+                if(req.result) mem[key] = req.result;
+                res(req.result || null);
+              };
+              req.onerror = function(){ res(null); };
+            }catch(e){ res(null); }
+          });
+        });
+      },
+      del: function(key){
+        delete mem[key];
+        return openDB().then(function(db){
+          if(!db) return;
+          return new Promise(function(res){
+            try{
+              var tx = db.transaction('blobs', 'readwrite');
+              tx.objectStore('blobs').delete(key);
+              tx.oncomplete = function(){ res(); };
+              tx.onerror = function(){ res(); };
+            }catch(e){ res(); }
+          });
+        });
+      }
+    };
+  })();
+
+  var objectUrlCache = {};
+  function getCoverUrl(gameId, fallbackUrl){
+    if(objectUrlCache[gameId]) return Promise.resolve(objectUrlCache[gameId]);
+    return FileStore.get('cover_' + gameId).then(function(blob){
+      if(blob){
+        var url = URL.createObjectURL(blob);
+        objectUrlCache[gameId] = url;
+        return url;
+      }
+      return fallbackUrl || '';
+    });
+  }
+
+  /* Генерация приятного градиента для обложки, если файл не загружен */
+  function coverGradient(seed){
+    var palettes = [
+      'linear-gradient(135deg,#2b2248 0%,#181822 100%)',
+      'linear-gradient(135deg,#1d334a 0%,#151821 100%)',
+      'linear-gradient(135deg,#203b2c 0%,#141918 100%)',
+      'linear-gradient(135deg,#422334 0%,#18151d 100%)',
+      'linear-gradient(135deg,#3a2e1d 0%,#18171c 100%)'
+    ];
+    var idx = Math.abs(String(seed||'').split('').reduce(function(a,c){return a+c.charCodeAt(0);},0)) % palettes.length;
+    return palettes[idx];
+  }
+
+  var users = read(K_USERS, []);
+  var games = read(K_GAMES, []);
+  var sessionId = read(K_SESSION, null);
+
+  if(read(K_THEME, 'dark') === 'light'){
+    document.body.classList.add('light');
+  }
+
+  /* Гарантируем существование главного аккаунта администратора */
+  function ensureAdmin(){
+    var admin = users.find(function(u){ return u.email.toLowerCase() === ADMIN_EMAIL; });
+    if(!admin){
+      admin = {
+        id:uid(), name:'Администратор', email:ADMIN_EMAIL, pass:hash('zenit'),
+        role:'admin', created:new Date().toISOString()
+      };
+      users.unshift(admin);
+    } else if(admin.role !== 'admin'){
+      admin.role = 'admin';
+    }
+    write(K_USERS, users);
+  }
+  ensureAdmin();
+  var session = users.find(function(u){ return u.id === sessionId; }) || null;
+
+  function toast(msg){
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+  }
+  function saveSession(){ write(K_SESSION, session ? session.id : null); }
+  function isAdmin(){ return !!session && session.role === 'admin'; }
+
+  /* ── Отрисовка витрины (каруселей) ─────────────────────── */
+  var railOffsets = { releases: 0, pc: 0 };
+  var globalQuery = '';
+
+  function buildGameCardHTML(g, resolvedCoverUrl){
+    var imgSrc = resolvedCoverUrl !== undefined ? resolvedCoverUrl : (g.previewUrl || g.image || '');
+    var bgStyle = imgSrc
+      ? 'background-image:url(\'' + esc(imgSrc) + '\'),' + coverGradient(g.title)
+      : 'background:' + coverGradient(g.title);
+
+    var fileBadge = g.fileName
+      ? '<span class="game-file-tag"><svg><use href="#i-download"/></svg>' + esc(g.fileExt || 'ФАЙЛ') + '</span>'
+      : '<span class="game-file-tag empty">Нет файла</span>';
+
+    return (
+      '<div class="game-art" style="' + bgStyle + '">' +
+        (g.badge ? '<span class="game-badge">' + esc(g.badge) + '</span>' : '') +
+      '</div>' +
+      '<div class="game-meta">' +
+        '<div class="game-title" title="' + esc(g.title) + '">' + esc(g.title) + '</div>' +
+        '<div class="game-date">' + esc(g.date || 'Без даты') + '</div>' +
+        '<div class="game-foot">' +
+          '<span class="game-rating">' + esc(g.rating || '—') + '</span>' +
+          fileBadge +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function downloadGameFile(g){
+    if(!g.fileName){
+      toast('Для этой игры файл ещё не загружен');
+      return;
+    }
+    FileStore.get('gamefile_' + g.id).then(function(blob){
+      if(!blob){
+        toast('Файл недоступен в текущем браузере');
+        return;
+      }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = g.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      toast('Скачивание: ' + g.fileName);
+    });
+  }
+
+  function renderRails(){
+    ['releases','pc'].forEach(function(section){
+      var rail = document.getElementById(section === 'releases' ? 'railReleases' : 'railPc');
+      var allItems = games.filter(function(g){
+        var matchSec = g.section === section;
+        var matchSearch = !globalQuery || g.title.toLowerCase().indexOf(globalQuery) >= 0;
+        return matchSec && matchSearch;
+      });
+
+      rail.innerHTML = '';
+      if(!allItems.length){
+        for(var i=0;i<5;i++){
+          var empty = document.createElement('div');
+          empty.className = 'empty-card';
+          empty.innerHTML = '<svg><use href="#i-gamepad"/></svg><span>' + (globalQuery ? 'НЕТ СОВПАДЕНИЙ' : 'ПУСТО') + '</span>';
+          rail.appendChild(empty);
+        }
+        return;
+      }
+
+      var offset = railOffsets[section] % allItems.length;
+      var visible = [];
+      var count = Math.min(5, allItems.length);
+      for(var j=0;j<count;j++){
+        visible.push(allItems[(offset + j) % allItems.length]);
+      }
+
+      visible.forEach(function(g){
+        var card = document.createElement('div');
+        card.className = 'game-card';
+        card.title = g.fileName ? ('Нажмите, чтобы скачать ' + g.fileName) : g.title;
+        card.innerHTML = buildGameCardHTML(g, '');
+        card.addEventListener('click', function(){ downloadGameFile(g); });
+        rail.appendChild(card);
+
+        getCoverUrl(g.id, g.image).then(function(url){
+          if(url && card.isConnected){
+            var artEl = card.querySelector('.game-art');
+            if(artEl) artEl.style.backgroundImage = 'url(\'' + url + '\'),' + coverGradient(g.title);
+          }
+        });
+      });
+    });
+  }
+
+  /* Навигация каруселей и точек */
+  document.querySelectorAll('.dots').forEach(function(group){
+    var total = Number(group.dataset.dots) || 5;
+    for(var i=0;i<total;i++){
+      var dot = document.createElement('i');
+      if(i===0) dot.className = 'on';
+      group.appendChild(dot);
+    }
+  });
+  document.querySelectorAll('.rail-foot').forEach(function(foot){
+    var section = foot.dataset.rail;
+    var dots = foot.querySelector('.dots');
+    foot.querySelectorAll('.arrow').forEach(function(arrow){
+      arrow.addEventListener('click',function(){
+        var dir = Number(arrow.dataset.dir);
+        var items = Array.prototype.slice.call(dots.children);
+        var current = items.findIndex(function(d){ return d.classList.contains('on'); });
+        if(current < 0) current = 0;
+        var next = (current + dir + items.length) % items.length;
+        items.forEach(function(d){ d.classList.remove('on'); });
+        items[next].classList.add('on');
+
+        railOffsets[section] = Math.max(0, railOffsets[section] + dir);
+        renderRails();
+      });
+    });
+  });
+
+  document.getElementById('globalSearch').addEventListener('input',function(e){
+    globalQuery = e.target.value.trim().toLowerCase();
+    renderRails();
+  });
+
+  /* ── Шапка и состояние аккаунта ────────────────────────── */
+  function updateHeader(){
+    var adminBtn = document.getElementById('adminBtn');
+    var accBtn = document.getElementById('accountBtn');
+    adminBtn.classList.toggle('show', isAdmin());
+
+    if(session){
+      var initials = session.name.trim().slice(0,2).toUpperCase() || 'ЮЗ';
+      accBtn.classList.add('logged');
+      accBtn.classList.toggle('is-admin', isAdmin());
+      accBtn.innerHTML =
+        '<span class="avatar-circle">' + esc(initials) + '</span>' +
+        '<span class="account-name">' + esc(session.name) + '</span>';
+      accBtn.title = session.email + (isAdmin() ? ' (Администратор)' : '');
+    } else {
+      accBtn.classList.remove('logged', 'is-admin');
+      accBtn.innerHTML = '<svg><use href="#i-user"/></svg><span>Войти</span>';
+      accBtn.title = 'Войти в аккаунт';
+    }
+  }
+
+  /* ── Модальное окно входа / регистрации / профиля ─────── */
+  function openOverlay(id){ document.getElementById(id).classList.add('open'); }
+  function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+
+  function switchAuthTab(isReg){
+    document.getElementById('authPaneLogin').classList.toggle('hidden', isReg);
+    document.getElementById('authPaneReg').classList.toggle('hidden', !isReg);
+    document.getElementById('authTabReg').classList.toggle('active', isReg);
+    document.getElementById('authTabLogin').classList.toggle('active', !isReg);
+  }
+
+  function renderAuthModal(){
+    var guestView = document.getElementById('authGuestView');
+    var profileView = document.getElementById('authProfileView');
+    var titleEl = document.getElementById('authModalTitle');
+    var subEl = document.getElementById('authModalSub');
+
+    if(session){
+      guestView.classList.add('hidden');
+      profileView.classList.remove('hidden');
+      titleEl.textContent = 'Профиль аккаунта';
+      subEl.textContent = 'Управление текущей сессией';
+
+      var card = document.getElementById('profileCard');
+      card.classList.toggle('is-admin', isAdmin());
+      document.getElementById('profileAvatar').textContent = session.name.trim().slice(0,2).toUpperCase() || 'ЮЗ';
+      document.getElementById('profileName').textContent = session.name;
+      document.getElementById('profileEmail').textContent = session.email;
+
+      var roleBadge = document.getElementById('profileRoleBadge');
+      roleBadge.textContent = isAdmin() ? 'АДМИН' : 'ПОЛЬЗОВАТЕЛЬ';
+      roleBadge.classList.toggle('admin', isAdmin());
+
+      document.getElementById('profileOpenAdmin').classList.toggle('hidden', !isAdmin());
+    } else {
+      profileView.classList.add('hidden');
+      guestView.classList.remove('hidden');
+      titleEl.textContent = 'Вход в ЗЕНИТ';
+      subEl.textContent = 'Авторизация и регистрация участников';
+      switchAuthTab(false);
+    }
+  }
+
+  document.getElementById('accountBtn').addEventListener('click',function(){
+    renderAuthModal();
+    openOverlay('authOverlay');
+  });
+
+  document.getElementById('authTabLogin').addEventListener('click',function(){ switchAuthTab(false); });
+  document.getElementById('authTabReg').addEventListener('click',function(){ switchAuthTab(true); });
+
+  /* Показ / скрытие пароля */
+  document.querySelectorAll('[data-eye]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var input = document.getElementById(btn.dataset.eye);
+      if(!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+  });
+
+  /* Регистрация */
+  document.getElementById('authPaneReg').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name = document.getElementById('regName').value.trim();
+    var email = document.getElementById('regEmail').value.trim().toLowerCase();
+    var pass = document.getElementById('regPass').value;
+
+    if(!name || !email || !pass){ toast('Заполните все поля'); return; }
+    if(email.indexOf('@') < 1){ toast('Укажите корректную почту'); return; }
+    if(pass.length < 4){ toast('Пароль должен быть не короче 4 символов'); return; }
+    if(users.some(function(u){ return u.email === email; })){
+      toast('Пользователь с такой почтой уже зарегистрирован');
+      return;
+    }
+
+    var user = {
+      id:uid(), name:name, email:email, pass:hash(pass),
+      role: email === ADMIN_EMAIL ? 'admin' : 'user',
+      created: new Date().toISOString()
+    };
+    users.push(user);
+    write(K_USERS, users);
+    session = user;
+    saveSession();
+    updateHeader();
+    closeOverlay('authOverlay');
+    toast('Аккаунт создан! Добро пожаловать, ' + user.name);
+  });
+
+  /* Вход */
+  document.getElementById('authPaneLogin').addEventListener('submit',function(e){
+    e.preventDefault();
+    var email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    var pass = document.getElementById('loginPass').value;
+
+    if(!email || !pass){ toast('Введите почту и пароль'); return; }
+    var user = users.find(function(u){ return u.email.toLowerCase() === email; });
+    if(!user){ toast('Аккаунт с такой почтой не найден'); return; }
+    if(user.pass !== hash(pass)){ toast('Неверный пароль'); return; }
+
+    if(user.email === ADMIN_EMAIL && user.role !== 'admin'){
+      user.role = 'admin';
+      write(K_USERS, users);
+    }
+
+    session = user;
+    saveSession();
+    updateHeader();
+    closeOverlay('authOverlay');
+    toast('С возвращением, ' + user.name + '!');
+  });
+
+  /* Выход из аккаунта */
+  document.getElementById('logoutBtn').addEventListener('click',function(){
+    session = null;
+    saveSession();
+    updateHeader();
+    closeOverlay('authOverlay');
+    closeOverlay('adminOverlay');
+    toast('Вы вышли из аккаунта');
+  });
+
+  document.getElementById('profileOpenAdmin').addEventListener('click',function(){
+    closeOverlay('authOverlay');
+    openAdminPanel();
+  });
+
+  /* ── Панель администратора ─────────────────────────────── */
+  var editingGameId = null;
+  var adminGameSectionFilter = 'all';
+  var adminGameQuery = '';
+  var adminUserRoleFilter = 'all';
+  var adminUserQuery = '';
+
+  /* Временное состояние загружаемых файлов в форме */
+  var pendingCoverBlob = null;
+  var pendingCoverPreview = '';
+  var pendingCoverRemoved = false;
+
+  var pendingGameBlob = null;
+  var pendingGameMeta = null;
+  var pendingGameRemoved = false;
+
+  function updateAdminStats(){
+    document.getElementById('statTotalGames').textContent = games.length;
+    document.getElementById('statReleases').textContent = games.filter(function(g){ return g.section === 'releases'; }).length;
+    document.getElementById('statPc').textContent = games.filter(function(g){ return g.section === 'pc'; }).length;
+    document.getElementById('statUsers').textContent = users.length;
+  }
+
+  function updateFileDropUI(){
+    var coverDrop = document.getElementById('coverDrop');
+    var coverNameEl = document.getElementById('coverFileName');
+    var coverHintEl = document.getElementById('coverFileHint');
+    var clearCoverBtn = document.getElementById('clearCoverBtn');
+
+    if(pendingCoverBlob){
+      coverDrop.classList.add('has-file');
+      coverNameEl.textContent = pendingCoverBlob.name || 'Обложка выбрана';
+      coverHintEl.textContent = formatBytes(pendingCoverBlob.size);
+      clearCoverBtn.classList.remove('hidden');
+    } else if(pendingCoverPreview){
+      coverDrop.classList.add('has-file');
+      coverNameEl.textContent = 'Текущая обложка сохранена';
+      coverHintEl.textContent = 'Нажмите, чтобы заменить';
+      clearCoverBtn.classList.remove('hidden');
+    } else {
+      coverDrop.classList.remove('has-file');
+      coverNameEl.textContent = 'Выбрать изображение...';
+      coverHintEl.textContent = 'PNG, JPG, WEBP';
+      clearCoverBtn.classList.add('hidden');
+    }
+
+    var gameDrop = document.getElementById('gameFileDrop');
+    var gameNameEl = document.getElementById('gameFileName');
+    var gameHintEl = document.getElementById('gameFileHint');
+    var clearGameBtn = document.getElementById('clearGameFileBtn');
+
+    if(pendingGameMeta){
+      gameDrop.classList.add('has-file');
+      gameNameEl.textContent = pendingGameMeta.fileName;
+      gameHintEl.textContent = (pendingGameMeta.fileExt || 'ФАЙЛ') + (pendingGameMeta.fileSize ? ' · ' + formatBytes(pendingGameMeta.fileSize) : '');
+      clearGameBtn.classList.remove('hidden');
+    } else {
+      gameDrop.classList.remove('has-file');
+      gameNameEl.textContent = 'Загрузить .zip или .torrent...';
+      gameHintEl.textContent = 'Архив или торрент-файл';
+      clearGameBtn.classList.add('hidden');
+    }
+  }
+
+  function updateLivePreview(){
+    var sample = {
+      title: document.getElementById('gTitle').value.trim() || 'Название игры',
+      date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
+      rating: document.getElementById('gRating').value.trim() || '8.5',
+      badge: document.getElementById('gBadge').value.trim(),
+      previewUrl: pendingCoverPreview,
+      fileName: pendingGameMeta ? pendingGameMeta.fileName : '',
+      fileExt: pendingGameMeta ? pendingGameMeta.fileExt : ''
+    };
+    document.getElementById('livePreviewCard').innerHTML = buildGameCardHTML(sample, pendingCoverPreview);
+  }
+
+  ['gTitle','gDate','gRating','gBadge'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', updateLivePreview);
+  });
+
+  /* Выбор файла обложки */
+  document.getElementById('gImageFile').addEventListener('change',function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')){
+      toast('Выберите файл изображения (PNG, JPG, WEBP)');
+      e.target.value = '';
+      return;
+    }
+    pendingCoverBlob = file;
+    pendingCoverRemoved = false;
+    pendingCoverPreview = URL.createObjectURL(file);
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  document.getElementById('clearCoverBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    pendingCoverBlob = null;
+    pendingCoverPreview = '';
+    pendingCoverRemoved = true;
+    document.getElementById('gImageFile').value = '';
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  /* Выбор файла игры (.zip / .torrent) */
+  document.getElementById('gGameFile').addEventListener('change',function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var parts = file.name.split('.');
+    var ext = parts.length > 1 ? parts.pop().toUpperCase() : 'ФАЙЛ';
+    pendingGameBlob = file;
+    pendingGameRemoved = false;
+    pendingGameMeta = {
+      fileName: file.name,
+      fileSize: file.size,
+      fileExt: ext
+    };
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  document.getElementById('clearGameFileBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    pendingGameBlob = null;
+    pendingGameMeta = null;
+    pendingGameRemoved = true;
+    document.getElementById('gGameFile').value = '';
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  function resetGameForm(){
+    editingGameId = null;
+    ['gTitle','gDate','gRating','gBadge'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('gImageFile').value = '';
+    document.getElementById('gGameFile').value = '';
+    pendingCoverBlob = null;
+    pendingCoverPreview = '';
+    pendingCoverRemoved = false;
+    pendingGameBlob = null;
+    pendingGameMeta = null;
+    pendingGameRemoved = false;
+
+    document.getElementById('publishBtnText').textContent = 'Опубликовать игру';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
+    updateFileDropUI();
+    updateLivePreview();
+  }
+
+  document.getElementById('cancelEditBtn').addEventListener('click', resetGameForm);
+
+  function switchAdminTab(tab){
+    document.getElementById('adminPaneGames').classList.toggle('hidden', tab !== 'games');
+    document.getElementById('adminPaneUsers').classList.toggle('hidden', tab !== 'users');
+    document.getElementById('adminTabGames').classList.toggle('active', tab === 'games');
+    document.getElementById('adminTabUsers').classList.toggle('active', tab === 'users');
+  }
+
+  function openAdminPanel(){
+    if(!isAdmin()){ toast('Доступ разрешён только администраторам'); return; }
+    switchAdminTab('games');
+    resetGameForm();
+    updateAdminStats();
+    renderAdminGames();
+    renderAdminUsers();
+    openOverlay('adminOverlay');
+  }
+
+  document.getElementById('adminBtn').addEventListener('click', openAdminPanel);
+  document.getElementById('adminTabGames').addEventListener('click',function(){ switchAdminTab('games'); });
+  document.getElementById('adminTabUsers').addEventListener('click',function(){ switchAdminTab('users'); renderAdminUsers(); });
+
+  /* Добавление / сохранение игры */
+  document.getElementById('gameForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    if(!isAdmin()){ toast('Недостаточно прав'); return; }
+
+    var title = document.getElementById('gTitle').value.trim();
+    if(!title){ toast('Укажите название игры'); document.getElementById('gTitle').focus(); return; }
+
+    var targetId = editingGameId || uid();
+    var existing = editingGameId ? games.find(function(g){ return g.id === editingGameId; }) : null;
+
+    var fileName = pendingGameRemoved ? '' : (pendingGameMeta ? pendingGameMeta.fileName : (existing ? existing.fileName : ''));
+    var fileSize = pendingGameRemoved ? 0 : (pendingGameMeta ? pendingGameMeta.fileSize : (existing ? existing.fileSize : 0));
+    var fileExt = pendingGameRemoved ? '' : (pendingGameMeta ? pendingGameMeta.fileExt : (existing ? existing.fileExt : ''));
+
+    var payload = {
+      section: document.getElementById('gSection').value,
+      title: title,
+      date: document.getElementById('gDate').value.trim() || 'Сегодня',
+      rating: document.getElementById('gRating').value.trim() || '—',
+      badge: document.getElementById('gBadge').value.trim(),
+      hasCover: pendingCoverRemoved ? false : (!!pendingCoverBlob || (existing ? !!existing.hasCover : false)),
+      fileName: fileName,
+      fileSize: fileSize,
+      fileExt: fileExt
+    };
+
+    var tasks = [];
+    if(pendingCoverBlob){
+      if(objectUrlCache[targetId]){
+        URL.revokeObjectURL(objectUrlCache[targetId]);
+        delete objectUrlCache[targetId];
+      }
+      tasks.push(FileStore.put('cover_' + targetId, pendingCoverBlob));
+    } else if(pendingCoverRemoved){
+      if(objectUrlCache[targetId]){
+        URL.revokeObjectURL(objectUrlCache[targetId]);
+        delete objectUrlCache[targetId];
+      }
+      tasks.push(FileStore.del('cover_' + targetId));
+    }
+
+    if(pendingGameBlob){
+      tasks.push(FileStore.put('gamefile_' + targetId, pendingGameBlob));
+    } else if(pendingGameRemoved){
+      tasks.push(FileStore.del('gamefile_' + targetId));
+    }
+
+    Promise.all(tasks).then(function(){
+      if(editingGameId){
+        var idx = games.findIndex(function(g){ return g.id === editingGameId; });
+        if(idx >= 0){
+          games[idx] = Object.assign({}, games[idx], payload);
+          toast('Изменения сохранены');
+        }
+      } else {
+        games.unshift(Object.assign({ id:targetId, created:new Date().toISOString() }, payload));
+        toast('Игра опубликована в каталоге');
+      }
+
+      write(K_GAMES, games);
+      resetGameForm();
+      updateAdminStats();
+      renderAdminGames();
+      renderRails();
+    });
+  });
+
+  /* Фильтрация списка игр в админке */
+  document.querySelectorAll('#gameSectionFilter .pill-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('#gameSectionFilter .pill-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      adminGameSectionFilter = btn.dataset.sec;
+      renderAdminGames();
+    });
+  });
+  document.getElementById('adminGameSearch').addEventListener('input',function(e){
+    adminGameQuery = e.target.value.trim().toLowerCase();
+    renderAdminGames();
+  });
+
+  function renderAdminGames(){
+    var host = document.getElementById('adminGamesList');
+    host.innerHTML = '';
+
+    var filtered = games.filter(function(g){
+      var secOk = adminGameSectionFilter === 'all' || g.section === adminGameSectionFilter;
+      var qOk = !adminGameQuery || g.title.toLowerCase().indexOf(adminGameQuery) >= 0;
+      return secOk && qOk;
+    });
+
+    if(!filtered.length){
+      host.innerHTML = '<div class="empty-note">В этом разделе пока нет игр</div>';
+      return;
+    }
+
+    filtered.forEach(function(g){
+      var row = document.createElement('div');
+      row.className = 'list-row';
+      var secLabel = g.section === 'releases' ? 'Вышедшие новинки' : 'Игры на ПК торрент';
+      var fileInfo = g.fileName ? (' · Файл: ' + g.fileName + (g.fileSize ? ' (' + formatBytes(g.fileSize) + ')' : '')) : ' · Без файла';
+
+      row.innerHTML =
+        '<div class="list-thumb" style="background:' + coverGradient(g.title) + '">' + esc(g.title.slice(0,2).toUpperCase()) + '</div>' +
+        '<div class="grow">' +
+          '<div class="name">' + esc(g.title) + '</div>' +
+          '<div class="sub">' + esc(secLabel) + ' · ' + esc(g.date) + ' · Рейтинг: ' + esc(g.rating) + esc(fileInfo) + '</div>' +
+        '</div>' +
+        '<div class="row-btns">' +
+          '<button type="button" class="btn ghost mini" data-edit="' + esc(g.id) + '" title="Редактировать"><svg><use href="#i-edit"/></svg>Изменить</button>' +
+          '<button type="button" class="btn danger mini" data-del="' + esc(g.id) + '">Удалить</button>' +
+        '</div>';
+      host.appendChild(row);
+
+      getCoverUrl(g.id, g.image).then(function(url){
+        if(url && row.isConnected){
+          var thumb = row.querySelector('.list-thumb');
+          if(thumb){
+            thumb.style.backgroundImage = 'url(\'' + url + '\')';
+            thumb.textContent = '';
+          }
+        }
+      });
+    });
+
+    host.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var g = games.find(function(x){ return x.id === btn.dataset.edit; });
+        if(!g) return;
+        editingGameId = g.id;
+        document.getElementById('gSection').value = g.section;
+        document.getElementById('gTitle').value = g.title;
+        document.getElementById('gDate').value = g.date;
+        document.getElementById('gRating').value = g.rating;
+        document.getElementById('gBadge').value = g.badge || '';
+
+        pendingCoverBlob = null;
+        pendingCoverRemoved = false;
+        pendingGameBlob = null;
+        pendingGameRemoved = false;
+        pendingGameMeta = g.fileName ? { fileName: g.fileName, fileSize: g.fileSize, fileExt: g.fileExt } : null;
+
+        document.getElementById('publishBtnText').textContent = 'Сохранить изменения';
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+        getCoverUrl(g.id, g.image).then(function(url){
+          pendingCoverPreview = url || '';
+          updateFileDropUI();
+          updateLivePreview();
+        });
+        document.getElementById('adminOverlay').querySelector('.modal').scrollTop = 0;
+      });
+    });
+
+    /* Двухэтапное подтверждение удаления */
+    host.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(!btn.classList.contains('confirming')){
+          btn.classList.add('confirming');
+          btn.textContent = 'Точно?';
+          setTimeout(function(){
+            if(btn.isConnected){
+              btn.classList.remove('confirming');
+              btn.textContent = 'Удалить';
+            }
+          }, 2800);
+          return;
+        }
+        var delId = btn.dataset.del;
+        games = games.filter(function(g){ return g.id !== delId; });
+        if(editingGameId === delId) resetGameForm();
+        if(objectUrlCache[delId]){
+          URL.revokeObjectURL(objectUrlCache[delId]);
+          delete objectUrlCache[delId];
+        }
+        FileStore.del('cover_' + delId);
+        FileStore.del('gamefile_' + delId);
+
+        write(K_GAMES, games);
+        updateAdminStats();
+        renderAdminGames();
+        renderRails();
+        toast('Игра удалена из каталога');
+      });
+    });
+  }
+
+  /* Управление пользователями в админке */
+  document.querySelectorAll('#userRoleFilter .pill-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('#userRoleFilter .pill-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      adminUserRoleFilter = btn.dataset.roleFilter;
+      renderAdminUsers();
+    });
+  });
+  document.getElementById('userSearch').addEventListener('input',function(e){
+    adminUserQuery = e.target.value.trim().toLowerCase();
+    renderAdminUsers();
+  });
+
+  function renderAdminUsers(){
+    var host = document.getElementById('adminUsersList');
+    host.innerHTML = '';
+
+    var filtered = users.filter(function(u){
+      var roleOk = adminUserRoleFilter === 'all' || u.role === adminUserRoleFilter;
+      var qOk = !adminUserQuery || u.name.toLowerCase().indexOf(adminUserQuery) >= 0 || u.email.toLowerCase().indexOf(adminUserQuery) >= 0;
+      return roleOk && qOk;
+    });
+
+    if(!filtered.length){
+      host.innerHTML = '<div class="empty-note">Пользователи не найдены</div>';
+      return;
+    }
+
+    filtered.forEach(function(u){
+      var row = document.createElement('div');
+      row.className = 'list-row';
+      var admin = u.role === 'admin';
+      var isOwner = u.email.toLowerCase() === ADMIN_EMAIL;
+
+      row.innerHTML =
+        '<div class="list-thumb">' + esc(u.name.slice(0,2).toUpperCase()) + '</div>' +
+        '<div class="grow">' +
+          '<div class="name">' + esc(u.name) + (isOwner ? ' ★' : '') + '</div>' +
+          '<div class="sub">' + esc(u.email) + '</div>' +
+        '</div>' +
+        '<span class="role ' + (admin ? 'admin' : '') + '">' + (admin ? 'АДМИН' : 'ЮЗЕР') + '</span>' +
+        '<div class="row-btns">' +
+          (isOwner
+            ? '<span class="sub" style="padding:0 6px">Главный админ</span>'
+            : '<button type="button" class="btn ghost mini" data-role="' + esc(u.id) + '">' + (admin ? 'Снять админку' : 'Сделать админом') + '</button>' +
+              '<button type="button" class="btn danger mini" data-del-user="' + esc(u.id) + '">Удалить</button>') +
+        '</div>';
+      host.appendChild(row);
+    });
+
+    host.querySelectorAll('[data-role]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var u = users.find(function(x){ return x.id === btn.dataset.role; });
+        if(!u || u.email.toLowerCase() === ADMIN_EMAIL) return;
+        u.role = u.role === 'admin' ? 'user' : 'admin';
+        write(K_USERS, users);
+        renderAdminUsers();
+        if(session && session.id === u.id) updateHeader();
+        toast('Права пользователя обновлены');
+      });
+    });
+
+    host.querySelectorAll('[data-del-user]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(!btn.classList.contains('confirming')){
+          btn.classList.add('confirming');
+          btn.textContent = 'Точно?';
+          setTimeout(function(){
+            if(btn.isConnected){
+              btn.classList.remove('confirming');
+              btn.textContent = 'Удалить';
+            }
+          }, 2800);
+          return;
+        }
+        var targetId = btn.dataset.delUser;
+        users = users.filter(function(u){ return u.id !== targetId; });
+        write(K_USERS, users);
+        updateAdminStats();
+        renderAdminUsers();
+        toast('Пользователь удалён');
+      });
+    });
+  }
+
+  /* ── Общие обработчики UI ──────────────────────────────── */
+  document.getElementById('themeToggle').addEventListener('click',function(){
+    var isLight = document.body.classList.toggle('light');
+    write(K_THEME, isLight ? 'light' : 'dark');
+  });
+
+  document.getElementById('notifBtn').addEventListener('click',function(){
+    toast('Новых системных уведомлений нет');
+  });
+
+  document.getElementById('brandHome').addEventListener('click',function(){
+    document.getElementById('globalSearch').value = '';
+    globalQuery = '';
+    renderRails();
+  });
+
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click',function(){ closeOverlay(b.dataset.close); });
+  });
+  document.querySelectorAll('.overlay').forEach(function(o){
+    o.addEventListener('click',function(e){ if(e.target === o) closeOverlay(o.id); });
+  });
+
+  document.querySelectorAll('.tabs .tab').forEach(function(tab){
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.tabs .tab').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
+  });
+
+  /* Инициализация */
+  renderRails();
+  updateHeader();
+  updateLivePreview();
+})();
+</script>
+</body>
+</html>
