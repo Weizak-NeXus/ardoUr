@@ -366,35 +366,61 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 }
 .game-file-tag svg{width:11px;height:11px}
 .game-file-tag.empty{color:var(--muted);background:transparent;padding:0}
-
-.rail-foot{
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-  margin-top:16px;padding-top:12px;border-top:1px solid var(--line);
+.card-dl-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:var(--r-xs);border:0;
+  background:var(--accent-grad);color:#0c0e13;
+  font-size:10px;font-weight:800;cursor:pointer;
+  transition:filter .18s ease,transform .15s ease;
 }
+.card-dl-btn:hover{filter:brightness(1.08)}
+.card-dl-btn:active{transform:scale(.95)}
+.card-dl-btn svg{width:11px;height:11px}
+
+/* Плашка глобального уведомления на главной */
+.live-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 16px;border-radius:var(--r-lg);
+  background:linear-gradient(90deg,rgba(255,160,0,.16) 0%,var(--panel) 65%);
+  border:1px solid rgba(255,160,0,.42);border-left:3px solid var(--accent);
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  animation:rise .3s ease both;
+}
+.live-banner-main{display:flex;align-items:center;gap:11px;min-width:0}
+.live-banner-ico{
+  width:32px;height:32px;border-radius:var(--r-sm);flex:none;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.live-banner-title{font-size:13px;font-weight:800;color:var(--text)}
+.live-banner-text{font-size:12px;color:#c5cbd8;margin-top:2px;line-height:1.35}
+.live-banner-actions{display:flex;align-items:center;gap:8px;flex:none}
+
+.rail-foot{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:15px}
 .dots{display:flex;gap:6px}
 .dots i{
-  width:7px;height:7px;border-radius:3px;background:var(--line-hover);
-  display:block;cursor:pointer;transition:background .25s ease,width .25s ease;
+  width:7px;height:7px;border-radius:2px;background:var(--line-hover);
+  display:block;cursor:pointer;transition:background .25s ease,transform .25s ease,width .25s ease;
 }
 .dots i.on{background:var(--accent);width:18px}
 .arrows{display:flex;align-items:center;gap:8px}
 .arrow{
   width:30px;height:30px;border:1px solid var(--line);border-radius:var(--r-sm);
-  background:var(--panel-2);color:#9aa2b2;cursor:pointer;display:flex;
+  background:var(--panel-2);color:#9da5b4;cursor:pointer;display:flex;
   align-items:center;justify-content:center;
   transition:color .2s ease,border-color .2s ease,background .2s ease,transform .15s ease;
 }
-.arrow:hover{color:var(--text);border-color:var(--accent);background:var(--panel-3)}
+.arrow:hover{color:var(--accent);border-color:var(--accent);background:var(--panel-3)}
 .arrow:active{transform:scale(.92)}
-.arrow svg{width:14px;height:14px}
+.arrow svg{width:15px;height:15px}
 .arrow:first-child svg{transform:rotate(180deg)}
 
 /* ── Боковая панель ────────────────────────────── */
 .sidebar{display:flex;flex-direction:column;gap:16px}
 .side-block{padding:16px}
 .side-block h3{
-  font-size:12px;font-weight:800;letter-spacing:.5px;
-  margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line);
+  font-size:12px;font-weight:800;letter-spacing:.5px;margin-bottom:12px;
+  padding-bottom:9px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:8px;position:relative;
 }
 .side-block h3::before{
@@ -734,6 +760,21 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 .profile-meta-val{font-size:12px;color:var(--text);font-weight:700;margin-top:2px}
 .profile-actions{display:flex;flex-direction:column;gap:8px}
 
+/* Диагностическая плашка Firebase в админ-панели */
+.diag-banner{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 14px;margin-bottom:14px;border-radius:var(--r-md);
+  background:var(--red-soft);border:1px solid rgba(255,107,107,.4);
+  border-left:3px solid var(--red);font-size:12px;line-height:1.45;
+}
+.diag-banner.ok{
+  background:var(--green-soft);border-color:rgba(61,220,132,.35);
+  border-left-color:var(--green);
+}
+.diag-banner strong{display:block;font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px}
+.diag-banner span{color:#cbd2e0}
+body.light .diag-banner span{color:#374151}
+
 /* Админ-панель */
 .stats-bar{
   display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;
@@ -1014,6 +1055,24 @@ body.light .auth-error{color:#c92a2a}
 
   <div class="layout">
     <main class="content">
+      <div class="live-banner hidden" id="liveGlobalBanner">
+        <div class="live-banner-main">
+          <div class="live-banner-ico"><svg><use href="#i-bell"/></svg></div>
+          <div>
+            <div class="live-banner-title" id="liveBannerTitle">Обновление каталога</div>
+            <div class="live-banner-text" id="liveBannerBody"></div>
+          </div>
+        </div>
+        <div class="live-banner-actions">
+          <button type="button" class="btn mini hidden" id="liveBannerDownloadBtn">
+            <svg><use href="#i-download"/></svg>Скачать
+          </button>
+          <button type="button" class="close" id="closeLiveBannerBtn" aria-label="Скрыть">
+            <svg><use href="#i-close"/></svg>
+          </button>
+        </div>
+      </div>
+
       <section class="block">
         <div class="section-head">
           <div class="title-row">
@@ -1239,6 +1298,14 @@ body.light .auth-error{color:#c92a2a}
 
     <!-- Вкладка: Игры -->
     <div class="pane" id="adminPaneGames">
+      <div class="diag-banner hidden" id="fbDiagBanner">
+        <div>
+          <strong id="fbDiagTitle">Проверка соединения с Firebase...</strong>
+          <span id="fbDiagText"></span>
+        </div>
+        <button type="button" class="btn ghost mini hidden" id="copyRulesBtn">Скопировать правила Firestore</button>
+      </div>
+
       <div class="stats-bar">
         <div class="stat-box">
           <div class="stat-val" id="statTotalGames">0</div>
@@ -1334,7 +1401,7 @@ body.light .auth-error{color:#c92a2a}
                 <div class="file-drop-icon"><svg><use href="#i-upload"/></svg></div>
                 <div class="file-drop-info">
                   <div class="file-drop-name" id="gameFileName">Загрузить .zip или .torrent...</div>
-                  <div class="file-drop-hint" id="gameFileHint">Архив или торрент-файл</div>
+                  <div class="file-drop-hint" id="gameFileHint">До 650 КБ в базу или в Storage</div>
                 </div>
                 <button type="button" class="file-clear hidden" id="clearGameFileBtn" title="Убрать файл">
                   <svg><use href="#i-close"/></svg>
@@ -1343,20 +1410,25 @@ body.light .auth-error{color:#c92a2a}
             </div>
           </div>
 
+          <div class="field">
+            <label for="gFileUrl">ИЛИ ПРЯМАЯ ССЫЛКА НА АРХИВ / ТОРРЕНТ (НЕОБЯЗАТЕЛЬНО)</label>
+            <input type="url" id="gFileUrl" placeholder="https://... (если архив большой и лежит на облачном диске)">
+          </div>
+
           <!-- Кастомное уведомление для всех пользователей -->
           <div class="notif-compose">
             <label class="notif-check-row">
-              <input type="checkbox" id="sendNotifCheck">
-              <span>Отправить кастомное уведомление всем пользователям</span>
+              <input type="checkbox" id="sendNotifCheck" checked>
+              <span>Отправить уведомление всем пользователям при публикации</span>
             </label>
-            <div class="notif-compose-fields hidden" id="notifComposeFields">
+            <div class="notif-compose-fields" id="notifComposeFields">
               <div class="field">
                 <label for="notifCustomTitle">ЗАГОЛОВОК УВЕДОМЛЕНИЯ</label>
-                <input type="text" id="notifCustomTitle" placeholder="Например: Обновлён торрент-файл!">
+                <input type="text" id="notifCustomTitle" placeholder="Авто: Новая игра / Обновление">
               </div>
               <div class="field">
                 <label for="notifCustomText">ТЕКСТ СООБЩЕНИЯ ДЛЯ ВСЕХ</label>
-                <input type="text" id="notifCustomText" placeholder="Добавлен свежий репак v1.2, можно качать">
+                <input type="text" id="notifCustomText" placeholder="Например: Добавлен свежий торрент-файл, можно качать!">
               </div>
             </div>
           </div>
@@ -1404,6 +1476,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 (function(){
   'use strict';
@@ -1432,31 +1505,23 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     ? JSON.parse(__firebase_config)
     : DEFAULT_FIREBASE_CONFIG;
 
-  var K_USERS = 'ardour_users_v2';
-  var K_GAMES = 'ardour_games_v2';
-  var K_NOTIFS = 'ardour_notifs_v2';
-  var K_READ_NOTIFS = 'ardour_read_notifs_v2';
-  var K_SESSION = 'ardour_session_v2';
-  var K_THEME = 'ardour_theme_v2';
+  var APP_ID = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'ardour-e38a3';
+
+  var FIRESTORE_RULES_SNIPPET =
+    "rules_version = '2';\n" +
+    "service cloud.firestore {\n" +
+    "  match /databases/{database}/documents {\n" +
+    "    match /artifacts/{appId}/public/data/{document=**} {\n" +
+    "      allow read, write: if request.auth != null;\n" +
+    "    }\n" +
+    "  }\n" +
+    "}";
 
   var db = null;
+  var storage = null;
   var fbAuth = null;
-  var firebaseReady = false;
-
-  function readLocal(key, fallback){
-    try{
-      var raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    }catch(e){
-      return fallback;
-    }
-  }
-
-  function writeLocal(key, val){
-    try{
-      localStorage.setItem(key, JSON.stringify(val));
-    }catch(e){}
-  }
+  var fbUser = null;
+  var cloudWriteError = '';
 
   function uid(){
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1494,28 +1559,23 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     }
   }
 
+  /* Строгие пути Firestore: artifacts/{appId}/public/data/{collectionName} */
   function getColRef(name){
     if(!db) return null;
-    if(typeof __app_id !== 'undefined' && __app_id){
-      return collection(db, 'artifacts', __app_id, 'public', 'data', name);
-    }
-    return collection(db, name);
+    return collection(db, 'artifacts', APP_ID, 'public', 'data', name);
   }
 
   function getDocRef(name, id){
     if(!db) return null;
-    if(typeof __app_id !== 'undefined' && __app_id){
-      return doc(db, 'artifacts', __app_id, 'public', 'data', name, id);
-    }
-    return doc(db, name, id);
+    return doc(db, 'artifacts', APP_ID, 'public', 'data', name, id);
   }
 
-  /* ── Состояние приложения ─────────────────────────── */
-  var users = readLocal(K_USERS, []);
-  var games = readLocal(K_GAMES, []);
-  var notifications = readLocal(K_NOTIFS, []);
-  var readNotifIds = readLocal(K_READ_NOTIFS, []);
-  var sessionId = readLocal(K_SESSION, null);
+  /* ── Состояние приложения в памяти ────────────────── */
+  var users = [];
+  var games = [];
+  var notifications = [];
+  var readNotifIds = [];
+  var dismissedBannerId = '';
 
   var activeTab = 'new';
   var selectedYear = 'all';
@@ -1529,6 +1589,8 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
   var editingGameId = null;
   var draftCoverData = '';
   var draftFileData = '';
+  var draftFileUrl = '';
+  var draftRawFile = null;
   var draftFileName = '';
   var draftFileSize = 0;
 
@@ -1539,20 +1601,18 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
         id: 'admin_root',
         name: 'Администратор',
         email: ADMIN_EMAIL,
-        pass: hashPass('ardour'),
+        pass: '',
         role: 'admin',
         created: new Date().toISOString()
       };
       users.unshift(found);
-      writeLocal(K_USERS, users);
     } else if(found.role !== 'admin'){
       found.role = 'admin';
-      writeLocal(K_USERS, users);
     }
   }
   ensureAdminUser();
 
-  var session = users.find(function(u){ return u.id === sessionId; }) || null;
+  var session = null;
   function isAdmin(){ return !!session && session.role === 'admin'; }
 
   function toast(msg){
@@ -1561,42 +1621,106 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toast._t);
-    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 2600);
+    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 3200);
   }
 
-  /* ── Облачная запись в Firestore ──────────────────── */
+  function updateDiagBanner(){
+    var banner = document.getElementById('fbDiagBanner');
+    var titleEl = document.getElementById('fbDiagTitle');
+    var textEl = document.getElementById('fbDiagText');
+    var copyBtn = document.getElementById('copyRulesBtn');
+    if(!banner) return;
+
+    if(cloudWriteError){
+      banner.classList.remove('hidden', 'ok');
+      titleEl.textContent = 'Требуется настройка доступа в Firebase (ardour-e38a3)';
+      textEl.textContent = cloudWriteError;
+      copyBtn.classList.remove('hidden');
+    } else if(fbUser){
+      banner.classList.remove('hidden');
+      banner.classList.add('ok');
+      titleEl.textContent = 'Облако Firebase (ardour-e38a3) подключено';
+      textEl.textContent = 'Все опубликованные игры, файлы и уведомления мгновенно обновляются у всех пользователей.';
+      copyBtn.classList.add('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+  }
+
+  document.getElementById('copyRulesBtn').addEventListener('click', function(){
+    var ta = document.createElement('textarea');
+    ta.value = FIRESTORE_RULES_SNIPPET;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try{
+      document.execCommand('copy');
+      toast('Правила Firestore скопированы! Вставьте их в Firebase Console → Firestore → Rules');
+    }catch(e){
+      toast('Не удалось скопировать правила');
+    }
+    document.body.removeChild(ta);
+  });
+
+  /* ── Облачная запись в Firestore с проверкой ошибок ─ */
   async function syncDoc(colName, id, payload){
-    if(!firebaseReady || !db) return;
+    if(!db || !fbUser){
+      cloudWriteError = 'Нет активной сессии Firebase. Включите Anonymous Sign-in в разделе Authentication проекта ardour-e38a3.';
+      updateDiagBanner();
+      return false;
+    }
     try{
       await setDoc(getDocRef(colName, id), payload);
+      cloudWriteError = '';
+      updateDiagBanner();
+      return true;
     }catch(err){
-      console.warn('Firestore write warning:', err);
+      var code = (err && err.code) ? err.code : String(err);
+      if(code.indexOf('permission-denied') >= 0){
+        cloudWriteError = 'Firestore отклонил запись (permission-denied). Откройте Firebase Console → Firestore Database → Rules и разрешите чтение/запись для авторизованных пользователей.';
+      } else {
+        cloudWriteError = 'Ошибка записи в облако: ' + code;
+      }
+      updateDiagBanner();
+      toast('Ошибка сохранения в Firebase: ' + code);
+      return false;
     }
   }
 
   async function removeDoc(colName, id){
-    if(!firebaseReady || !db) return;
+    if(!db || !fbUser) return false;
     try{
       await deleteDoc(getDocRef(colName, id));
+      return true;
     }catch(err){
-      console.warn('Firestore delete warning:', err);
+      toast('Ошибка удаления из облака: ' + (err && err.code ? err.code : err));
+      return false;
     }
   }
 
   /* ── Скачивание файла игры ────────────────────────── */
+  function hasDownloadableFile(game){
+    return !!(game && (game.fileData || game.fileUrl));
+  }
+
   function downloadGameFile(game){
-    if(!game || !game.fileData){
+    if(!hasDownloadableFile(game)){
       toast('Для этой игры пока не прикреплён файл для скачивания');
       return;
     }
     try{
       var a = document.createElement('a');
-      a.href = game.fileData;
+      a.href = game.fileData || game.fileUrl;
+      if(game.fileUrl && !game.fileData){
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
       a.download = game.fileName || (game.title + '.torrent');
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast('Скачивание: ' + (game.fileName || game.title));
+      toast('Загрузка: ' + (game.fileName || game.title));
     }catch(e){
       toast('Не удалось начать скачивание файла');
     }
@@ -1649,7 +1773,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     }
 
     if(sortBy === 'files'){
-      list = list.filter(function(g){ return !!g.fileData; });
+      list = list.filter(hasDownloadableFile);
     }
 
     var effectiveSort = (activeTab === 'top' && sortBy === 'newest') ? 'rating' : sortBy;
@@ -1702,8 +1826,9 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       ? '<span class="game-badge">' + esc(g.badge) + '</span>'
       : '';
 
-    var fileTag = g.fileData
-      ? '<span class="game-file-tag" title="Нажмите, чтобы скачать ' + esc(g.fileName || 'файл') + '"><svg><use href="#i-download"/></svg>' + esc((g.fileName || 'Файл').split('.').pop().toUpperCase()) + '</span>'
+    var ext = (g.fileName || '').split('.').pop().toUpperCase();
+    var fileTag = hasDownloadableFile(g)
+      ? '<button type="button" class="card-dl-btn" title="Скачать ' + esc(g.fileName || 'файл') + '"><svg><use href="#i-download"/></svg>' + esc(ext && ext.length <= 7 ? ext : 'СКАЧАТЬ') + '</button>'
       : '<span class="game-file-tag empty">' + esc(g.tag || 'Каталог') + '</span>';
 
     card.innerHTML =
@@ -1909,7 +2034,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     renderRails();
   });
 
-  /* ── Уведомления ──────────────────────────────────── */
+  /* ── Глобальные уведомления (колокольчик + баннер) ── */
   function renderNotifications(){
     var unread = notifications.filter(function(n){ return readNotifIds.indexOf(n.id) < 0; });
     var badge = document.getElementById('notifBadge');
@@ -1920,6 +2045,26 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       badge.classList.add('hidden');
     }
 
+    /* Показываем последнее непрочитанное уведомление в баннере на главной */
+    var banner = document.getElementById('liveGlobalBanner');
+    var latestUnread = unread.find(function(n){ return n.id !== dismissedBannerId; });
+    if(latestUnread){
+      document.getElementById('liveBannerTitle').textContent = latestUnread.title;
+      document.getElementById('liveBannerBody').textContent = latestUnread.body;
+      var dlBtn = document.getElementById('liveBannerDownloadBtn');
+      var linked = latestUnread.gameId ? games.find(function(g){ return g.id === latestUnread.gameId; }) : null;
+      if(linked && hasDownloadableFile(linked)){
+        dlBtn.classList.remove('hidden');
+        dlBtn.onclick = function(){ downloadGameFile(linked); };
+      } else {
+        dlBtn.classList.add('hidden');
+      }
+      banner.dataset.notifId = latestUnread.id;
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+
     var list = document.getElementById('notifPopList');
     if(!notifications.length){
       list.innerHTML = '<div class="empty-note">Пока нет новых уведомлений</div>';
@@ -1927,7 +2072,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     }
 
     list.innerHTML = '';
-    notifications.slice(0, 20).forEach(function(n){
+    notifications.slice(0, 25).forEach(function(n){
       var isRead = readNotifIds.indexOf(n.id) >= 0;
       var item = document.createElement('div');
       item.className = 'notif-item' + (isRead ? ' read' : '');
@@ -1950,6 +2095,17 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     });
   }
 
+  document.getElementById('closeLiveBannerBtn').addEventListener('click', function(){
+    var banner = document.getElementById('liveGlobalBanner');
+    var nid = banner.dataset.notifId;
+    if(nid){
+      dismissedBannerId = nid;
+      if(readNotifIds.indexOf(nid) < 0) readNotifIds.push(nid);
+    }
+    banner.classList.add('hidden');
+    renderNotifications();
+  });
+
   document.getElementById('notifBtn').addEventListener('click', function(e){
     e.stopPropagation();
     document.getElementById('notifPopover').classList.toggle('open');
@@ -1957,7 +2113,6 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
 
   document.getElementById('markAllReadBtn').addEventListener('click', function(){
     readNotifIds = notifications.map(function(n){ return n.id; });
-    writeLocal(K_READ_NOTIFS, readNotifIds);
     renderNotifications();
   });
 
@@ -2101,14 +2256,18 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     }
     if(email === ADMIN_EMAIL){
       user.role = 'admin';
-      writeLocal(K_USERS, users);
+      if(!user.pass){
+        user.pass = hashPass(pass);
+      } else if(user.pass !== hashPass(pass)){
+        showAuthError('Неверный пароль');
+        return;
+      }
       await syncDoc('ardour_users', user.id, user);
     } else if(user.pass !== hashPass(pass)){
       showAuthError('Неверный пароль');
       return;
     }
     session = user;
-    writeLocal(K_SESSION, session.id);
     updateHeaderUI();
     closeOverlay('authOverlay');
     toast('Добро пожаловать, ' + user.name + '!');
@@ -2127,23 +2286,26 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       showAuthError('Пароль должен содержать минимум 4 символа');
       return;
     }
-    if(users.some(function(u){ return (u.email || '').toLowerCase() === email; })){
+    var existing = users.find(function(u){ return (u.email || '').toLowerCase() === email; });
+    if(existing && existing.id !== 'admin_root'){
       showAuthError('Пользователь с такой почтой уже зарегистрирован');
       return;
     }
     var newUser = {
-      id: uid(),
+      id: existing ? existing.id : uid(),
       name: name,
       email: email,
       pass: hashPass(pass),
       role: email === ADMIN_EMAIL ? 'admin' : 'user',
       created: new Date().toISOString()
     };
-    users.push(newUser);
-    writeLocal(K_USERS, users);
+    if(existing){
+      users = users.map(function(u){ return u.id === existing.id ? newUser : u; });
+    } else {
+      users.push(newUser);
+    }
     await syncDoc('ardour_users', newUser.id, newUser);
     session = newUser;
-    writeLocal(K_SESSION, session.id);
     updateHeaderUI();
     closeOverlay('authOverlay');
     toast('Аккаунт создан! Добро пожаловать на ArdoUr');
@@ -2151,7 +2313,6 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
 
   document.getElementById('logoutBtn').addEventListener('click', function(){
     session = null;
-    writeLocal(K_SESSION, null);
     updateHeaderUI();
     closeOverlay('authOverlay');
     toast('Вы вышли из аккаунта');
@@ -2163,12 +2324,8 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
   });
 
   /* ── Тема оформления ──────────────────────────────── */
-  if(readLocal(K_THEME, 'dark') === 'light'){
-    document.body.classList.add('light');
-  }
   document.getElementById('themeToggle').addEventListener('click', function(){
     document.body.classList.toggle('light');
-    writeLocal(K_THEME, document.body.classList.contains('light') ? 'light' : 'dark');
   });
 
   /* ── Админ-панель: предпросмотр и загрузка файлов ─── */
@@ -2180,14 +2337,17 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     var rating = document.getElementById('gRating').value.trim() || '8.5';
     var badge = document.getElementById('gBadge').value.trim();
     var tag = document.getElementById('gTag').value.trim();
+    var extUrl = document.getElementById('gFileUrl').value.trim();
 
     var bgStyle = draftCoverData
       ? ' style="background-image:url(\'' + esc(draftCoverData) + '\')"'
       : ' style="background:linear-gradient(135deg,#1e2433 0%,#141822 100%)"';
 
     var rightBadge = badge ? '<span class="game-badge">' + esc(badge) + '</span>' : '';
-    var fileTag = draftFileData
-      ? '<span class="game-file-tag"><svg><use href="#i-download"/></svg>' + esc((draftFileName || 'FILE').split('.').pop().toUpperCase()) + '</span>'
+    var hasFile = !!(draftFileData || draftFileUrl || draftRawFile || extUrl);
+    var ext = (draftFileName || 'FILE').split('.').pop().toUpperCase();
+    var fileTag = hasFile
+      ? '<span class="game-file-tag"><svg><use href="#i-download"/></svg>' + esc(ext && ext.length <= 7 ? ext : 'ФАЙЛ') + '</span>'
       : '<span class="game-file-tag empty">' + esc(tag || 'Каталог') + '</span>';
 
     preview.innerHTML =
@@ -2199,7 +2359,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       '</div>';
   }
 
-  ['gTitle', 'gDate', 'gRating', 'gBadge', 'gTag'].forEach(function(id){
+  ['gTitle', 'gDate', 'gRating', 'gBadge', 'gTag', 'gFileUrl'].forEach(function(id){
     document.getElementById(id).addEventListener('input', updateLivePreview);
     document.getElementById(id).addEventListener('change', updateLivePreview);
   });
@@ -2224,7 +2384,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
   function setGameFileDropUI(name, hint){
     var drop = document.getElementById('gameFileDrop');
     var clearBtn = document.getElementById('clearGameFileBtn');
-    if(draftFileData){
+    if(draftFileData || draftFileUrl || draftRawFile){
       drop.classList.add('has-file');
       document.getElementById('gameFileName').textContent = name || 'Файл загружен';
       document.getElementById('gameFileHint').textContent = hint || 'Доступно для скачивания';
@@ -2232,13 +2392,13 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     } else {
       drop.classList.remove('has-file');
       document.getElementById('gameFileName').textContent = 'Загрузить .zip или .torrent...';
-      document.getElementById('gameFileHint').textContent = 'Архив или торрент-файл';
+      document.getElementById('gameFileHint').textContent = 'До 650 КБ в базу или в Storage';
       clearBtn.classList.add('hidden');
     }
     updateLivePreview();
   }
 
-  /* Сжатие изображения обложки для быстрой синхронизации в Firestore */
+  /* Оптимальное сжатие обложки, чтобы гарантированно уложиться в лимит документа Firestore */
   document.getElementById('gImageFile').addEventListener('change', function(e){
     var file = e.target.files && e.target.files[0];
     if(!file) return;
@@ -2246,14 +2406,14 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     reader.onload = function(ev){
       var img = new Image();
       img.onload = function(){
-        var maxW = 480;
+        var maxW = 420;
         var scale = img.width > maxW ? (maxW / img.width) : 1;
         var canvas = document.createElement('canvas');
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        draftCoverData = canvas.toDataURL('image/jpeg', 0.82);
+        draftCoverData = canvas.toDataURL('image/jpeg', 0.78);
         setCoverDropUI(file.name, formatBytes(file.size));
       };
       img.onerror = function(){
@@ -2276,22 +2436,29 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
   document.getElementById('gGameFile').addEventListener('change', function(e){
     var file = e.target.files && e.target.files[0];
     if(!file) return;
-    if(file.size > 780 * 1024){
-      toast('Файл больше 780 КБ: для облачной раздачи всем лучше загрузить .torrent-файл');
+    draftRawFile = file;
+    draftFileName = file.name;
+    draftFileSize = file.size;
+    draftFileUrl = '';
+
+    if(file.size <= 620 * 1024){
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        draftFileData = ev.target.result;
+        setGameFileDropUI(file.name, formatBytes(file.size) + ' · готов');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      draftFileData = '';
+      setGameFileDropUI(file.name, formatBytes(file.size) + ' · загрузка через Storage');
     }
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      draftFileData = ev.target.result;
-      draftFileName = file.name;
-      draftFileSize = file.size;
-      setGameFileDropUI(file.name, formatBytes(file.size));
-    };
-    reader.readAsDataURL(file);
   });
 
   document.getElementById('clearGameFileBtn').addEventListener('click', function(e){
     e.stopPropagation();
     draftFileData = '';
+    draftFileUrl = '';
+    draftRawFile = null;
     draftFileName = '';
     draftFileSize = 0;
     document.getElementById('gGameFile').value = '';
@@ -2307,11 +2474,14 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     document.getElementById('gameForm').reset();
     draftCoverData = '';
     draftFileData = '';
+    draftFileUrl = '';
+    draftRawFile = null;
     draftFileName = '';
     draftFileSize = 0;
     setCoverDropUI('', '');
     setGameFileDropUI('', '');
-    document.getElementById('notifComposeFields').classList.add('hidden');
+    document.getElementById('sendNotifCheck').checked = true;
+    document.getElementById('notifComposeFields').classList.remove('hidden');
     document.getElementById('publishBtnText').textContent = 'Опубликовать игру';
     document.getElementById('cancelEditBtn').classList.add('hidden');
     updateLivePreview();
@@ -2348,8 +2518,8 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       var row = document.createElement('div');
       row.className = 'list-row';
       var thumbStyle = g.image ? ' style="background-image:url(\'' + esc(g.image) + '\')"' : '';
-      var fileBadge = g.fileData
-        ? '<span class="row-file-badge"><svg><use href="#i-file"/></svg>' + esc(g.fileName || 'Файл') + '</span>'
+      var fileBadge = hasDownloadableFile(g)
+        ? '<span class="row-file-badge"><svg><use href="#i-file"/></svg>' + esc(g.fileName || 'Ссылка на файл') + '</span>'
         : '';
 
       row.innerHTML =
@@ -2381,12 +2551,15 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
         document.getElementById('gRating').value = target.rating || '';
         document.getElementById('gBadge').value = target.badge || '';
         document.getElementById('gTag').value = target.tag || '';
+        document.getElementById('gFileUrl').value = target.fileUrl || '';
         draftCoverData = target.image || '';
         draftFileData = target.fileData || '';
+        draftFileUrl = target.fileUrl || '';
+        draftRawFile = null;
         draftFileName = target.fileName || '';
         draftFileSize = target.fileSize || 0;
         setCoverDropUI(draftCoverData ? 'Текущая обложка' : '', draftCoverData ? 'Загружена' : '');
-        setGameFileDropUI(draftFileName, draftFileSize ? formatBytes(draftFileSize) : '');
+        setGameFileDropUI(draftFileName, draftFileSize ? formatBytes(draftFileSize) : (draftFileUrl ? 'Внешняя ссылка' : ''));
         document.getElementById('publishBtnText').textContent = 'Сохранить изменения';
         document.getElementById('cancelEditBtn').classList.remove('hidden');
         updateLivePreview();
@@ -2409,12 +2582,11 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
         }
         var id = btn.dataset.del;
         games = games.filter(function(g){ return g.id !== id; });
-        writeLocal(K_GAMES, games);
-        await removeDoc('ardour_games', id);
         if(editingGameId === id) resetAdminForm();
         renderRails();
         renderAdminGames();
-        toast('Игра удалена из каталога');
+        var ok = await removeDoc('ardour_games', id);
+        if(ok) toast('Игра удалена из облачного каталога');
       });
     });
   }
@@ -2434,60 +2606,90 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       return;
     }
 
-    var isEdit = !!editingGameId;
-    var gameId = editingGameId || uid();
-    var existing = isEdit ? games.find(function(x){ return x.id === gameId; }) : null;
+    var pubBtn = document.getElementById('publishBtn');
+    var pubLabel = document.getElementById('publishBtnText');
+    pubBtn.disabled = true;
+    pubLabel.textContent = 'Сохранение...';
 
-    var gameObj = {
-      id: gameId,
-      section: document.getElementById('gSection').value,
-      title: title,
-      date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
-      rating: document.getElementById('gRating').value.trim() || '8.0',
-      badge: document.getElementById('gBadge').value.trim(),
-      tag: document.getElementById('gTag').value.trim(),
-      image: draftCoverData || '',
-      fileData: (draftFileData && draftFileData.length <= 850000) ? draftFileData : '',
-      fileName: draftFileName || '',
-      fileSize: draftFileSize || 0,
-      updated: isEdit,
-      updatedAt: new Date().toISOString(),
-      created: (existing && existing.created) ? existing.created : new Date().toISOString()
-    };
+    try{
+      var isEdit = !!editingGameId;
+      var gameId = editingGameId || uid();
+      var existing = isEdit ? games.find(function(x){ return x.id === gameId; }) : null;
 
-    if(isEdit){
-      games = games.map(function(g){ return g.id === gameId ? gameObj : g; });
-    } else {
-      games.unshift(gameObj);
-    }
+      var finalFileData = draftFileData || '';
+      var finalFileUrl = document.getElementById('gFileUrl').value.trim() || draftFileUrl || '';
 
-    writeLocal(K_GAMES, games);
-    await syncDoc('ardour_games', gameObj.id, gameObj);
+      /* Если выбран крупный файл (> 620 КБ), загружаем его в Firebase Storage */
+      if(draftRawFile && !finalFileData && storage && fbUser){
+        try{
+          var sRef = storageRef(storage, 'artifacts/' + APP_ID + '/files/' + gameId + '_' + draftRawFile.name);
+          await uploadBytes(sRef, draftRawFile);
+          finalFileUrl = await getDownloadURL(sRef);
+        }catch(stErr){
+          toast('Крупный архив не удалось загрузить в Storage (укажите прямую ссылку или .torrent-файл)');
+        }
+      }
 
-    /* Отправка глобального уведомления всем пользователям */
-    if(document.getElementById('sendNotifCheck').checked){
-      var customTitle = document.getElementById('notifCustomTitle').value.trim() ||
-        (isEdit ? 'Обновление: ' + title : 'Новая игра: ' + title);
-      var customText = document.getElementById('notifCustomText').value.trim() ||
-        (gameObj.fileName ? 'Доступен файл ' + gameObj.fileName + ' для скачивания' : 'Добавлено в каталог ArdoUr');
+      /* Гарантируем, что общий вес документа не превышает 900 КБ (лимит Firestore 1 МБ) */
+      var safeCover = (draftCoverData && draftCoverData.length <= 220000) ? draftCoverData : '';
+      var safeFileData = (finalFileData && (finalFileData.length + safeCover.length) <= 880000) ? finalFileData : '';
 
-      var notifObj = {
-        id: uid(),
-        title: customTitle,
-        body: customText,
-        gameId: gameObj.id,
-        created: new Date().toISOString()
+      var gameObj = {
+        id: gameId,
+        section: document.getElementById('gSection').value,
+        title: title,
+        date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
+        rating: document.getElementById('gRating').value.trim() || '8.0',
+        badge: document.getElementById('gBadge').value.trim(),
+        tag: document.getElementById('gTag').value.trim(),
+        image: safeCover,
+        fileData: safeFileData,
+        fileUrl: finalFileUrl,
+        fileName: draftFileName || (finalFileUrl ? 'Скачать архив' : ''),
+        fileSize: draftFileSize || 0,
+        updated: isEdit,
+        updatedAt: new Date().toISOString(),
+        created: (existing && existing.created) ? existing.created : new Date().toISOString()
       };
-      notifications.unshift(notifObj);
-      writeLocal(K_NOTIFS, notifications);
-      await syncDoc('ardour_notifications', notifObj.id, notifObj);
-      renderNotifications();
-    }
 
-    resetAdminForm();
-    renderRails();
-    renderAdminGames();
-    toast(isEdit ? 'Изменения сохранены и доступны всем!' : 'Игра опубликована в общем каталоге!');
+      /* Мгновенно обновляем локальный интерфейс и отправляем в Firestore */
+      if(isEdit){
+        games = games.map(function(g){ return g.id === gameId ? gameObj : g; });
+      } else {
+        games.unshift(gameObj);
+      }
+      renderRails();
+      renderAdminGames();
+
+      var savedOk = await syncDoc('ardour_games', gameObj.id, gameObj);
+
+      /* Отправка глобального уведомления всем пользователям */
+      if(document.getElementById('sendNotifCheck').checked){
+        var customTitle = document.getElementById('notifCustomTitle').value.trim() ||
+          (isEdit ? 'Обновление: ' + title : 'Новая игра: ' + title);
+        var customText = document.getElementById('notifCustomText').value.trim() ||
+          (hasDownloadableFile(gameObj) ? 'Доступен файл ' + (gameObj.fileName || '') + ' для скачивания' : 'Добавлено в каталог ArdoUr');
+
+        var notifObj = {
+          id: uid(),
+          title: customTitle,
+          body: customText,
+          gameId: gameObj.id,
+          created: new Date().toISOString()
+        };
+        notifications.unshift(notifObj);
+        renderNotifications();
+        await syncDoc('ardour_notifications', notifObj.id, notifObj);
+      }
+
+      resetAdminForm();
+      if(savedOk){
+        toast(isEdit ? 'Изменения сохранены и видны всем!' : 'Игра опубликована в общем каталоге!');
+      }
+    } finally {
+      pubBtn.disabled = false;
+      pubLabel.textContent = editingGameId ? 'Сохранить изменения' : 'Опубликовать игру';
+    }
   });
 
   function renderAdminUsers(){
@@ -2531,14 +2733,13 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
           return;
         }
         target.role = target.role === 'admin' ? 'user' : 'admin';
-        writeLocal(K_USERS, users);
-        await syncDoc('ardour_users', target.id, target);
+        var ok = await syncDoc('ardour_users', target.id, target);
         if(session && session.id === target.id){
           session = target;
           updateHeaderUI();
         }
         renderAdminUsers();
-        toast('Роль участника обновлена');
+        if(ok) toast('Роль участника обновлена');
       });
     });
   }
@@ -2558,6 +2759,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       return;
     }
     switchAdminTab('games');
+    updateDiagBanner();
     updateLivePreview();
     renderAdminGames();
     renderAdminUsers();
@@ -2571,7 +2773,7 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
     renderAdminUsers();
   });
 
-  /* ── Инициализация Firebase и подписка в реальном времени ── */
+  /* ── Инициализация Firebase: строго сначала Auth, затем Firestore ── */
   async function initFirebase(){
     var pill = document.getElementById('fbStatusPill');
     var label = document.getElementById('fbStatusText');
@@ -2585,22 +2787,22 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
       }
       fbAuth = getAuth(app);
       db = getFirestore(app);
+      storage = getStorage(app);
 
-      try{
-        if(typeof __initial_auth_token !== 'undefined' && __initial_auth_token){
-          await signInWithCustomToken(fbAuth, __initial_auth_token);
-        } else {
-          await signInAnonymously(fbAuth);
-        }
-      }catch(authErr){
-        console.warn('Anonymous auth skipped:', authErr);
+      /* Шаг 1: обязательная аутентификация перед любыми запросами к Firestore */
+      if(typeof __initial_auth_token !== 'undefined' && __initial_auth_token){
+        await signInWithCustomToken(fbAuth, __initial_auth_token);
+      } else {
+        await signInAnonymously(fbAuth);
       }
+      fbUser = fbAuth.currentUser;
+      if(!fbUser) return;
 
-      firebaseReady = true;
       pill.classList.add('online');
       label.textContent = 'ardour-e38a3 · в сети';
+      updateDiagBanner();
 
-      /* Подписка на общий каталог игр */
+      /* Шаг 2: подписка на общий каталог игр в реальном времени */
       onSnapshot(getColRef('ardour_games'), function(snap){
         var cloudGames = [];
         snap.forEach(function(d){ cloudGames.push(d.data()); });
@@ -2608,36 +2810,35 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
           return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
         });
         games = cloudGames;
-        writeLocal(K_GAMES, games);
         renderRails();
         if(document.getElementById('adminOverlay').classList.contains('open')){
           renderAdminGames();
         }
       }, function(err){
-        console.warn('Games snapshot error:', err);
+        cloudWriteError = 'Нет доступа к чтению каталога Firestore (' + (err && err.code ? err.code : err) + ').';
+        updateDiagBanner();
       });
 
-      /* Подписка на пользователей */
+      /* Шаг 3: подписка на участников */
       onSnapshot(getColRef('ardour_users'), function(snap){
         var cloudUsers = [];
         snap.forEach(function(d){ cloudUsers.push(d.data()); });
         if(cloudUsers.length){
           users = cloudUsers;
-          ensureAdminUser();
-          writeLocal(K_USERS, users);
-          if(session){
-            session = users.find(function(u){ return u.id === session.id; }) || session;
-            updateHeaderUI();
-          }
-          if(document.getElementById('adminOverlay').classList.contains('open')){
-            renderAdminUsers();
-          }
+        }
+        ensureAdminUser();
+        if(session){
+          session = users.find(function(u){ return u.id === session.id; }) || session;
+          updateHeaderUI();
+        }
+        if(document.getElementById('adminOverlay').classList.contains('open')){
+          renderAdminUsers();
         }
       }, function(err){
         console.warn('Users snapshot error:', err);
       });
 
-      /* Подписка на глобальные уведомления */
+      /* Шаг 4: подписка на глобальные уведомления */
       var firstNotifLoad = true;
       onSnapshot(getColRef('ardour_notifications'), function(snap){
         var cloudNotifs = [];
@@ -2650,20 +2851,21 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "ht
         }
         firstNotifLoad = false;
         notifications = cloudNotifs;
-        writeLocal(K_NOTIFS, notifications);
         renderNotifications();
       }, function(err){
         console.warn('Notifications snapshot error:', err);
       });
 
     }catch(err){
-      console.warn('Firebase offline fallback:', err);
+      var code = (err && err.code) ? err.code : String(err);
       pill.classList.remove('online');
-      label.textContent = 'локальный режим';
+      label.textContent = 'ошибка Firebase';
+      cloudWriteError = 'Не удалось выполнить вход в Firebase (' + code + '). Проверьте, включён ли Anonymous Sign-in в консоли ardour-e38a3.';
+      updateDiagBanner();
     }
   }
 
-  /* Первый рендер и старт синхронизации */
+  /* Первый рендер и запуск облачной синхронизации */
   renderRails();
   renderNotifications();
   updateHeaderUI();
