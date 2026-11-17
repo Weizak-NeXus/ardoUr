@@ -3,40 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ЗЕНИТ — игровой каталог</title>
+<title>ArdoUr — игровой каталог</title>
 <style>
-/* ЗЕНИТ — однофайловое приложение, готовое к размещению на GitHub Pages */
+/* ArdoUr — однофайловое приложение в стилистике Firebase, готовое к GitHub Pages */
 :root{
-  --bg:#0d0d11;
-  --panel:#15151a;
-  --panel-2:#1d1d24;
-  --panel-3:#24242d;
-  --line:#2a2a34;
-  --line-hover:#3e3e4d;
-  --text:#eeeef2;
-  --muted:#8e8e9a;
-  --accent:#9b7bff;
-  --accent-hover:#ab8fff;
-  --accent-soft:rgba(155,123,255,.14);
-  --blue:#5aa0ff;
-  --green:#52b765;
-  --green-soft:rgba(82,183,101,.15);
-  --red:#e86464;
-  --red-soft:rgba(232,100,100,.14);
-  --shadow:0 16px 40px rgba(0,0,0,.45);
+  --bg:#0c0e13;
+  --panel:#13161f;
+  --panel-2:#191d28;
+  --panel-3:#212634;
+  --line:#262c3a;
+  --line-hover:#384156;
+  --text:#f0f2f7;
+  --muted:#8d95a5;
+  --accent:#ffa000;
+  --accent-2:#ff6f00;
+  --accent-hover:#ffb300;
+  --accent-soft:rgba(255,160,0,.14);
+  --accent-grad:linear-gradient(135deg,#ffca28 0%,#ffa000 50%,#ff6f00 100%);
+  --divider-grad:linear-gradient(90deg,#ffa000 0%,#ff6f00 45%,transparent 100%);
+  --blue:#4fc3f7;
+  --green:#3ddc84;
+  --green-soft:rgba(61,220,132,.14);
+  --red:#ff6b6b;
+  --red-soft:rgba(255,107,107,.14);
+  --shadow:0 16px 40px rgba(0,0,0,.48);
+  --card-3d-shadow:0 12px 26px -6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
 
-  /* Умеренные, аккуратные скругления */
+  /* Умеренные скругления */
   --r-xs:4px;
   --r-sm:6px;
   --r-md:8px;
   --r-lg:10px;
   --r-xl:12px;
-  --r-pill:8px;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:var(--bg);color:var(--text);
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 80% 45% at 50% -10%, rgba(255,160,0,.07), transparent);
+  color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
   font-size:14px;min-height:100vh;padding-bottom:34px;
   animation:fade .35s ease both;
@@ -44,38 +49,70 @@ body{
 .sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
 svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
   stroke-linecap:round;stroke-linejoin:round;flex:none}
-#i-mark,#i-bolt{fill:currentColor;stroke:none}
+#i-bolt{fill:currentColor;stroke:none}
+.hidden{display:none!important}
+
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes pop{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slideFromRight{
+  from{opacity:.25;transform:translateX(26px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@keyframes slideFromLeft{
+  from{opacity:.25;transform:translateX(-26px) scale(.985)}
+  to{opacity:1;transform:none}
+}
 
-/* ── Верхняя панель ───────────────────────────── */
+/* ── Верхняя панель в стиле Firebase ── */
 .topbar{
-  position:sticky;top:0;z-index:30;
+  position:sticky;top:0;z-index:35;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   height:60px;padding:0 22px;
-  background:rgba(18,18,23,.92);backdrop-filter:blur(12px);
+  background:rgba(19,22,31,.92);backdrop-filter:blur(12px);
+  border-top:2px solid var(--accent);
   border-bottom:1px solid var(--line);
+  box-shadow:0 6px 24px rgba(0,0,0,.28);
 }
+.brand-group{display:flex;align-items:center;gap:12px}
 .brand{
   display:flex;align-items:center;gap:10px;font-weight:800;
-  font-size:19px;letter-spacing:1.2px;cursor:pointer;user-select:none;
+  font-size:20px;letter-spacing:.6px;cursor:pointer;user-select:none;
 }
-.brand-mark{width:24px;height:24px;color:var(--accent)}
-.top-actions{display:flex;align-items:center;gap:10px}
+.brand-logo{
+  width:32px;height:32px;flex:none;
+  filter:drop-shadow(0 4px 10px rgba(255,136,0,.38));
+  transition:transform .28s cubic-bezier(.22,1,.36,1);
+}
+.brand:hover .brand-logo{transform:translateY(-1px) scale(1.05)}
+.brand-word{display:flex;align-items:baseline;font-weight:900;letter-spacing:.4px}
+.brand-word span{
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.fb-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  height:24px;padding:0 9px;border-radius:var(--r-xs);
+  background:var(--panel-2);border:1px solid var(--line);
+  font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.2px;
+}
+.fb-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-soft);
+}
+.fb-chip.online .fb-dot{background:var(--green);box-shadow:0 0 0 2px var(--green-soft)}
+.fb-chip.online{color:var(--text);border-color:rgba(61,220,132,.35)}
 
+.top-actions{display:flex;align-items:center;gap:10px}
 .search{position:relative;display:flex;align-items:center}
 .search input{
-  width:240px;height:36px;padding:0 36px 0 13px;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-pill);
+  width:230px;height:36px;padding:0 36px 0 13px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
   color:var(--text);font-size:13px;outline:none;
-  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+  transition:border-color .2s ease,background .2s ease,width .25s ease;
 }
 .search input::placeholder{color:var(--muted)}
-.search input:focus{
-  border-color:var(--accent);background:var(--panel-3);
-  box-shadow:0 0 0 3px var(--accent-soft);
-}
+.search input:focus{border-color:var(--accent);background:var(--panel-3);width:260px}
 .search svg{position:absolute;right:11px;color:var(--muted);width:16px;height:16px;pointer-events:none}
 
 .icon-btn{
@@ -87,158 +124,263 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 }
 .icon-btn:hover{color:var(--text);background:var(--panel-3);border-color:var(--line-hover)}
 .icon-btn:active{transform:scale(.95)}
-.badge-dot{
-  position:absolute;top:7px;right:7px;width:7px;height:7px;
-  background:var(--accent);border-radius:50%;
-  box-shadow:0 0 0 2px var(--panel-2);
+
+.notif-wrap{position:relative}
+.notif-count{
+  position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;
+  background:var(--accent-grad);color:#0c0e13;border-radius:9px;
+  font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.45);
 }
+.notif-popover{
+  position:absolute;right:0;top:44px;width:340px;max-height:420px;
+  background:var(--panel);border:1px solid var(--line-hover);
+  border-top:2px solid var(--accent);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);z-index:45;display:none;flex-direction:column;
+  animation:pop .2s ease both;overflow:hidden;
+}
+.notif-popover.open{display:flex}
+.notif-pop-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:12px 14px;border-bottom:1px solid var(--line);background:var(--panel-2);
+}
+.notif-pop-head strong{font-size:12px;font-weight:800;letter-spacing:.3px}
+.notif-pop-list{overflow-y:auto;max-height:330px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.notif-item{
+  padding:10px 11px;border-radius:var(--r-md);background:var(--panel-2);
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  transition:border-color .2s ease,background .2s ease;
+}
+.notif-item.read{border-left-color:var(--line-hover);opacity:.78}
+.notif-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.notif-item-title{font-size:12px;font-weight:800;color:var(--text)}
+.notif-item-time{font-size:10px;color:var(--muted);white-space:nowrap}
+.notif-item-body{font-size:11px;color:#c2c8d6;line-height:1.4}
+.notif-item-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.notif-game-link{
+  display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+  color:var(--accent);background:var(--accent-soft);border:0;border-radius:var(--r-xs);
+  padding:3px 8px;cursor:pointer;
+}
+.notif-game-link svg{width:12px;height:12px}
+.notif-game-link:hover{background:rgba(255,160,0,.24)}
 
 .admin-btn{
   display:none;align-items:center;gap:7px;height:36px;padding:0 13px;
-  background:var(--accent-soft);border:1px solid rgba(155,123,255,.45);
-  border-radius:var(--r-sm);color:var(--accent);
+  background:var(--accent-soft);border:1px solid rgba(255,160,0,.45);
+  color:var(--accent);border-radius:var(--r-sm);
   font-size:12px;font-weight:700;letter-spacing:.3px;cursor:pointer;
   transition:background .2s ease,color .2s ease,transform .15s ease;
 }
-.admin-btn:hover{background:var(--accent);color:#0d0d11}
-.admin-btn:active{transform:scale(.97)}
+.admin-btn:hover{background:var(--accent);color:#0c0e13}
+.admin-btn:active{transform:scale(.96)}
 .admin-btn.show{display:flex}
 .admin-btn svg{width:15px;height:15px}
 
-/* Кнопка входа / профиль пользователя в шапке */
 .account-pill{
-  display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;
-  background:var(--panel-2);border:1px solid var(--line);
-  border-radius:var(--r-pill);color:var(--text);
-  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--text);font-size:12px;font-weight:700;cursor:pointer;
   transition:border-color .2s ease,background .2s ease,transform .15s ease;
 }
-.account-pill:hover{border-color:var(--accent);background:var(--panel-3)}
+.account-pill:hover{border-color:var(--line-hover);background:var(--panel-3)}
 .account-pill:active{transform:scale(.97)}
-.account-pill.logged{padding-left:6px}
+.account-pill.logged{padding:0 12px 0 6px}
 .avatar-circle{
-  width:24px;height:24px;border-radius:var(--r-xs);
-  background:linear-gradient(135deg,var(--accent),#6d4de0);
-  color:#fff;font-size:11px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;
+  width:25px;height:25px;border-radius:var(--r-xs);background:var(--accent-grad);
+  color:#0c0e13;font-size:11px;font-weight:900;display:flex;align-items:center;
+  justify-content:center;
 }
-.account-pill.is-admin .avatar-circle{
-  background:linear-gradient(135deg,#52b765,#2f8f46);
-}
-.account-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avatar-circle.is-admin{background:linear-gradient(135deg,#3ddc84,#00bfa5)}
 
 /* ── Основная сетка ────────────────────────────── */
 .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
-.tabs{
-  display:flex;align-items:center;gap:6px;margin-top:16px;padding:6px 8px;
+.nav-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-top:16px;padding:6px 8px;
   background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--r-md);overflow-x:auto;animation:rise .4s ease both;
+  border-radius:var(--r-md);animation:rise .4s ease both;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
+.tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tab-group{position:relative;display:inline-flex}
 .tab{
   position:relative;display:flex;align-items:center;gap:7px;background:none;
-  border:0;color:#aaaab5;font-size:12px;font-weight:700;letter-spacing:.4px;
+  border:1px solid transparent;color:#9da5b4;font-size:12px;font-weight:700;letter-spacing:.4px;
   cursor:pointer;height:34px;padding:0 13px;border-radius:var(--r-sm);white-space:nowrap;
-  transition:color .2s ease,background .2s ease;
+  transition:color .2s ease,background .2s ease,border-color .2s ease,transform .15s ease;
 }
 .tab:hover{color:var(--text);background:var(--panel-2)}
-.tab.active{color:var(--accent);background:var(--accent-soft)}
+.tab.active{
+  color:var(--accent);background:var(--accent-soft);
+  border-color:rgba(255,160,0,.28);
+}
 .tab svg{width:15px;height:15px}
-.tab .caret{width:12px;height:12px}
+.tab .caret{width:12px;height:12px;transition:transform .2s ease}
+.tab-group.open .caret{transform:rotate(180deg)}
+.year-menu{
+  position:absolute;top:40px;left:0;min-width:140px;padding:5px;
+  background:var(--panel);border:1px solid var(--line-hover);
+  border-radius:var(--r-md);box-shadow:var(--shadow);z-index:25;
+  display:none;flex-direction:column;gap:3px;animation:pop .18s ease both;
+}
+.tab-group.open .year-menu{display:flex}
+.year-menu button{
+  text-align:left;background:none;border:0;border-radius:var(--r-xs);
+  color:#c2c8d6;font-size:12px;font-weight:600;padding:7px 10px;cursor:pointer;
+}
+.year-menu button:hover{background:var(--panel-2);color:var(--text)}
+.year-menu button.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+
+.sort-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sort-label{font-size:11px;font-weight:700;color:var(--muted)}
+.sort-select{
+  height:32px;padding:0 10px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--text);font-size:12px;font-weight:600;outline:none;cursor:pointer;
+  transition:border-color .2s ease;
+}
+.sort-select:focus,.sort-select:hover{border-color:var(--accent)}
+.active-filter-chip{
+  display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  background:var(--accent-soft);border:1px solid rgba(255,160,0,.35);
+  border-radius:var(--r-sm);color:var(--accent);font-size:11px;font-weight:700;
+  cursor:pointer;
+}
+.active-filter-chip svg{width:13px;height:13px}
 
 .layout{display:grid;grid-template-columns:1fr 256px;gap:16px;margin-top:16px}
 .content{display:flex;flex-direction:column;gap:16px;min-width:0}
 
-/* ── Блоки и карточки ──────────────────────────── */
+/* ── Блоки и 3D-карточки с делениями Firebase ─────── */
 .block,.side-block{
   background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-lg);animation:rise .45s ease both;
+  box-shadow:0 8px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
 }
 .block{padding:18px 18px 15px}
-.content .block:nth-child(2){animation-delay:.05s}
-.sidebar .side-block:nth-child(2){animation-delay:.05s}
-
-.section-head{margin-bottom:16px}
+.section-head{
+  margin-bottom:16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);position:relative;
+}
+.section-head::after{
+  content:"";position:absolute;left:0;bottom:-1px;width:140px;height:2px;
+  background:var(--divider-grad);
+}
 .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .section-head h2{
-  display:flex;align-items:center;gap:9px;
   font-size:15px;font-weight:800;letter-spacing:.4px;
+  display:flex;align-items:center;gap:9px;
 }
 .section-head h2::before{
-  content:"";display:inline-block;width:4px;height:15px;
-  background:var(--accent);border-radius:3px;
+  content:"";display:inline-block;width:3px;height:14px;border-radius:2px;
+  background:var(--accent-grad);
 }
 .accent-link{
-  color:var(--blue);font-size:11px;font-weight:700;
+  color:var(--accent);font-size:11px;font-weight:700;
   text-decoration:none;letter-spacing:.3px;padding:4px 10px;
-  border-radius:var(--r-sm);background:rgba(90,160,255,.1);
-  transition:background .2s ease,opacity .2s ease;
+  border-radius:var(--r-xs);background:var(--accent-soft);
+  border:1px solid rgba(255,160,0,.25);
+  transition:background .2s ease,border-color .2s ease;
 }
-.accent-link:hover{background:rgba(90,160,255,.18)}
+.accent-link:hover{background:rgba(255,160,0,.22);border-color:rgba(255,160,0,.45)}
 .sub{color:var(--muted);font-size:12px;margin-top:5px}
 
-.carousel{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:192px}
+.carousel{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:198px;
+  perspective:1100px;
+}
+.carousel.slide-next .game-card,
+.carousel.slide-next .empty-card{
+  animation:slideFromRight .36s cubic-bezier(.22,1,.36,1) both;
+}
+.carousel.slide-prev .game-card,
+.carousel.slide-prev .empty-card{
+  animation:slideFromLeft .36s cubic-bezier(.22,1,.36,1) both;
+}
+.carousel .game-card:nth-child(2){animation-delay:.025s}
+.carousel .game-card:nth-child(3){animation-delay:.05s}
+.carousel .game-card:nth-child(4){animation-delay:.075s}
+.carousel .game-card:nth-child(5){animation-delay:.1s}
+
 .empty-card{
   border:1px dashed var(--line);border-radius:var(--r-md);background:var(--panel-2);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  padding:12px;color:#52525e;
+  padding:12px;color:#525a6b;
   transition:border-color .25s ease,background .25s ease,transform .25s ease;
 }
-.empty-card:hover{border-color:var(--line-hover);background:var(--panel-3);transform:translateY(-2px)}
+.empty-card:hover{border-color:rgba(255,160,0,.35);background:var(--panel-3);transform:translateY(-2px)}
 .empty-card svg{width:20px;height:20px;opacity:.45}
 .empty-card span{font-size:10px;font-weight:700;letter-spacing:.7px}
 
 .game-card{
+  position:relative;
   border:1px solid var(--line);background:var(--panel-2);border-radius:var(--r-md);
-  overflow:hidden;transition:border-color .25s ease,transform .25s ease,box-shadow .25s ease;
+  overflow:hidden;transform-style:preserve-3d;
+  box-shadow:var(--card-3d-shadow);
+  transition:border-color .25s ease,transform .22s cubic-bezier(.22,1,.36,1),box-shadow .25s ease;
   display:flex;flex-direction:column;cursor:pointer;
 }
-.game-card:hover{
-  border-color:var(--accent);transform:translateY(-3px);
-  box-shadow:0 10px 24px rgba(0,0,0,.32);
+.game-card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,30%), rgba(255,202,40,.18), transparent 62%);
+  transition:opacity .25s ease;
 }
+.game-card:hover{
+  border-color:var(--accent);
+  box-shadow:0 16px 32px rgba(0,0,0,.52), 0 0 0 1px rgba(255,160,0,.22), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.game-card:hover::after{opacity:1}
 .game-art{
+  position:relative;
   height:126px;background:var(--panel-3) center/cover no-repeat;
-  display:flex;align-items:flex-end;justify-content:flex-start;padding:8px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:6px;padding:8px;
+  border-bottom:1px solid var(--line);
+}
+.game-rank{
+  background:rgba(12,14,19,.85);color:var(--accent);border:1px solid rgba(255,160,0,.45);
+  font-size:10px;font-weight:900;padding:2px 6px;border-radius:var(--r-xs);
+  backdrop-filter:blur(4px);
 }
 .game-badge{
-  background:var(--accent);color:#0d0d11;font-size:9px;
+  background:var(--accent-grad);color:#0c0e13;font-size:9px;
   font-weight:800;letter-spacing:.5px;padding:3px 7px;border-radius:var(--r-xs);
-  box-shadow:0 2px 8px rgba(0,0,0,.35);
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
-.game-meta{padding:10px;display:flex;flex-direction:column;gap:5px;flex:1}
+.game-meta{padding:10px 10px 11px;display:flex;flex-direction:column;gap:5px;flex:1}
 .game-title{
   font-size:12px;font-weight:700;line-height:1.3;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .game-date{font-size:11px;color:var(--muted)}
 .game-foot{
-  display:flex;justify-content:space-between;align-items:center;gap:6px;
-  font-size:11px;margin-top:auto;padding-top:4px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;margin-top:auto;padding-top:6px;
+  border-top:1px solid rgba(255,255,255,.05);
 }
-.game-rating{
-  color:var(--green);font-weight:800;background:var(--green-soft);
-  padding:2px 6px;border-radius:var(--r-xs);
-}
+.game-rating{color:var(--green);font-weight:800}
 .game-file-tag{
   display:inline-flex;align-items:center;gap:4px;
-  color:var(--accent);font-weight:700;font-size:10px;
-  background:var(--accent-soft);padding:2px 7px;border-radius:var(--r-xs);
+  color:var(--accent);font-size:10px;font-weight:700;
+  background:var(--accent-soft);padding:2px 6px;border-radius:var(--r-xs);
 }
-.game-file-tag.empty{color:var(--muted);background:var(--panel-3)}
 .game-file-tag svg{width:11px;height:11px}
+.game-file-tag.empty{color:var(--muted);background:transparent;padding:0}
 
-.rail-foot{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:16px}
-.dots{display:flex;align-items:center;gap:6px}
-.dots i{
-  width:6px;height:6px;border-radius:50%;background:#3c3c47;
-  display:block;cursor:pointer;
-  transition:background .25s ease,width .25s ease,border-radius .25s ease;
+.rail-foot{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  margin-top:16px;padding-top:12px;border-top:1px solid var(--line);
 }
-.dots i.on{background:var(--accent);width:16px;border-radius:4px}
+.dots{display:flex;gap:6px}
+.dots i{
+  width:7px;height:7px;border-radius:3px;background:var(--line-hover);
+  display:block;cursor:pointer;transition:background .25s ease,width .25s ease;
+}
+.dots i.on{background:var(--accent);width:18px}
 .arrows{display:flex;align-items:center;gap:8px}
 .arrow{
   width:30px;height:30px;border:1px solid var(--line);border-radius:var(--r-sm);
-  background:var(--panel-2);color:#a5a5b2;cursor:pointer;display:flex;
+  background:var(--panel-2);color:#9aa2b2;cursor:pointer;display:flex;
   align-items:center;justify-content:center;
   transition:color .2s ease,border-color .2s ease,background .2s ease,transform .15s ease;
 }
@@ -251,308 +393,319 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 .sidebar{display:flex;flex-direction:column;gap:16px}
 .side-block{padding:16px}
 .side-block h3{
-  display:flex;align-items:center;gap:8px;
-  font-size:12px;font-weight:800;letter-spacing:.6px;margin-bottom:12px;
+  font-size:12px;font-weight:800;letter-spacing:.5px;
+  margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;position:relative;
 }
 .side-block h3::before{
-  content:"";display:inline-block;width:3px;height:12px;
-  background:var(--accent);border-radius:3px;
+  content:"";display:inline-block;width:3px;height:11px;border-radius:2px;
+  background:var(--accent-grad);
+}
+.side-block h3::after{
+  content:"";position:absolute;left:0;bottom:-1px;width:65px;height:2px;
+  background:var(--divider-grad);
 }
 .nav-list{list-style:none;display:flex;flex-direction:column;gap:3px}
 .nav-list li{
-  display:flex;align-items:center;gap:10px;color:#b0b0bc;
+  display:flex;align-items:center;gap:10px;color:#aeb5c4;
   font-size:12px;padding:7px 9px;border-radius:var(--r-sm);cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.03);
   transition:background .2s ease,color .2s ease,transform .15s ease;
 }
-.nav-list li:hover{background:var(--panel-2);color:var(--text);transform:translateX(2px)}
-.nav-list svg{width:15px;height:15px;color:#80808e}
+.nav-list li:last-child{border-bottom:0}
+.nav-list li:hover,.nav-list li.active{background:var(--panel-2);color:var(--text);transform:translateX(2px)}
+.nav-list li.active{border-left:2px solid var(--accent);color:var(--accent);font-weight:700}
+.nav-list li:hover svg,.nav-list li.active svg{color:var(--accent)}
+.nav-list svg{width:15px;height:15px;color:#7d8597;transition:color .2s ease}
 
 .genre-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .genre-grid div{
-  display:flex;align-items:center;gap:7px;color:#b0b0bc;
+  display:flex;align-items:center;gap:7px;color:#aeb5c4;
   font-size:12px;padding:7px 8px;border-radius:var(--r-sm);cursor:pointer;
-  transition:background .2s ease,color .2s ease;
+  border:1px solid transparent;
+  transition:background .2s ease,color .2s ease,border-color .2s ease;
 }
-.genre-grid div:hover{background:var(--panel-2);color:var(--text)}
-.genre-grid svg{width:14px;height:14px;color:#80808e}
+.genre-grid div:hover,.genre-grid div.active{background:var(--panel-2);color:var(--text);border-color:var(--line)}
+.genre-grid div.active{border-color:rgba(255,160,0,.4);color:var(--accent);font-weight:700}
+.genre-grid div:hover svg,.genre-grid div.active svg{color:var(--accent)}
+.genre-grid svg{width:14px;height:14px;color:#7d8597;transition:color .2s ease}
 
 /* ── Модальные окна ────────────────────────────── */
 .overlay{
-  position:fixed;inset:0;background:rgba(6,6,9,.78);backdrop-filter:blur(6px);
-  display:none;align-items:center;justify-content:center;padding:16px;z-index:50;
+  position:fixed;inset:0;background:rgba(6,8,12,.76);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
   animation:fade .2s ease both;
 }
 .overlay.open{display:flex}
 .modal{
-  width:100%;max-width:440px;max-height:90vh;overflow:auto;
+  width:100%;max-width:460px;max-height:88vh;overflow:auto;
   background:var(--panel);border:1px solid var(--line-hover);
+  border-top:2px solid var(--accent);
   border-radius:var(--r-xl);box-shadow:var(--shadow);
   animation:pop .24s ease both;
 }
-.modal.wide{max-width:920px}
-
+.modal.wide{max-width:860px}
 .modal-head{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:18px 20px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--line);
 }
 .modal-head-title{display:flex;align-items:center;gap:10px}
 .modal-icon{
-  width:34px;height:34px;border-radius:var(--r-sm);
+  width:32px;height:32px;border-radius:var(--r-sm);
   background:var(--accent-soft);color:var(--accent);
   display:flex;align-items:center;justify-content:center;
 }
+.modal-icon svg{width:16px;height:16px}
 .modal-head h3{font-size:15px;font-weight:800;letter-spacing:.3px}
 .modal-sub{font-size:11px;color:var(--muted);margin-top:2px}
-
 .close{
-  width:32px;height:32px;border-radius:var(--r-sm);background:var(--panel-2);
-  border:1px solid var(--line);color:var(--muted);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:var(--r-sm);
+  background:var(--panel-2);border:1px solid var(--line);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:color .2s ease,background .2s ease,border-color .2s ease;
 }
 .close:hover{color:var(--text);background:var(--panel-3);border-color:var(--line-hover)}
 
-/* Сегментированные переключатели вкладок */
+.seg-wrap{padding:14px 20px 0}
 .seg-tabs{
-  display:flex;gap:6px;padding:5px;margin:16px 20px 0;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:4px;background:var(--panel-2);border-radius:var(--r-md);
+  border:1px solid var(--line);
 }
 .seg-tabs button{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
   background:none;border:0;border-radius:var(--r-sm);
-  color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.3px;
-  padding:9px 12px;cursor:pointer;
+  color:var(--muted);font-size:12px;font-weight:700;
+  padding:8px 12px;cursor:pointer;
   transition:color .2s ease,background .2s ease,box-shadow .2s ease;
 }
-.seg-tabs button:hover{color:var(--text)}
 .seg-tabs button.active{
   background:var(--panel-3);color:var(--text);
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  box-shadow:0 2px 8px rgba(0,0,0,.28);
 }
-.seg-tabs button.active svg{color:var(--accent)}
-.seg-tabs button svg{width:15px;height:15px}
 
-.pane{padding:18px 20px 20px}
-.pane.hidden{display:none}
+.pane{padding:20px}
 
-/* Поля ввода */
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
-.field label{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px;
-}
+.field label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.3px}
 .input-wrap{position:relative;display:flex;align-items:center}
 .field input,.field select{
   width:100%;height:38px;padding:0 12px;background:var(--panel-2);
   border:1px solid var(--line);border-radius:var(--r-sm);color:var(--text);
-  font-size:13px;outline:none;
-  transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;
+  font-size:13px;outline:none;transition:border-color .2s ease,background .2s ease;
 }
+.field input:focus,.field select:focus{border-color:var(--accent);background:var(--panel-3)}
 .input-wrap input{padding-right:38px}
-.field input:focus,.field select:focus{
-  border-color:var(--accent);background:var(--panel-3);
-  box-shadow:0 0 0 3px var(--accent-soft);
-}
-.eye-btn{
-  position:absolute;right:6px;width:28px;height:28px;border:0;
-  background:none;color:var(--muted);cursor:pointer;border-radius:var(--r-xs);
+.pass-toggle{
+  position:absolute;right:6px;width:28px;height:28px;border:0;border-radius:var(--r-xs);
+  background:transparent;color:var(--muted);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:color .2s ease,background .2s ease;
 }
-.eye-btn:hover{color:var(--text);background:var(--panel-2)}
-.eye-btn svg{width:16px;height:16px}
+.pass-toggle:hover{color:var(--text);background:var(--panel-3)}
+.pass-toggle svg{width:15px;height:15px}
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px}
-
-/* Кнопки */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  height:38px;padding:0 16px;background:var(--accent);border:1px solid var(--accent);
-  border-radius:var(--r-sm);color:#0d0d11;font-size:12px;font-weight:800;
-  letter-spacing:.3px;cursor:pointer;
-  transition:background .2s ease,transform .15s ease,box-shadow .2s ease;
-}
-.btn:hover{background:var(--accent-hover);box-shadow:0 4px 14px rgba(155,123,255,.3)}
-.btn:active{transform:scale(.98)}
-.btn.full{width:100%}
-.btn.ghost{
-  background:var(--panel-2);border-color:var(--line);color:var(--text);
-}
-.btn.ghost:hover{
-  background:var(--panel-3);border-color:var(--accent);color:var(--accent);box-shadow:none;
-}
-.btn.danger{
-  background:var(--red-soft);border-color:rgba(232,100,100,.35);color:var(--red);
-}
-.btn.danger:hover{background:var(--red);color:#fff;box-shadow:none}
-.btn.danger.confirming{background:var(--red);color:#fff;border-color:var(--red)}
-.btn svg{width:15px;height:15px}
-.mini{height:30px;padding:0 11px;font-size:11px;border-radius:var(--r-xs)}
-.mini svg{width:13px;height:13px}
-
-.row-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-
-/* Карточка профиля при активной сессии */
-.profile-card{
-  display:flex;align-items:center;gap:14px;padding:16px;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
-  margin-bottom:14px;
-}
-.profile-avatar{
-  width:46px;height:46px;border-radius:var(--r-md);flex:none;
-  background:linear-gradient(135deg,var(--accent),#6d4de0);
-  color:#fff;font-size:16px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;
-}
-.profile-card.is-admin .profile-avatar{
-  background:linear-gradient(135deg,#52b765,#2f8f46);
-}
-.profile-info{flex:1;min-width:0}
-.profile-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
-.profile-email{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
-
-/* Зона загрузки файлов (обложка и архив/торрент) */
+/* Загрузка файлов */
 .file-drop{
   position:relative;display:flex;align-items:center;gap:10px;
-  min-height:42px;padding:7px 11px;
+  padding:9px 11px;min-height:46px;
   background:var(--panel-2);border:1px dashed var(--line-hover);
-  border-radius:var(--r-sm);cursor:pointer;
+  border-radius:var(--r-md);cursor:pointer;
   transition:border-color .2s ease,background .2s ease;
 }
 .file-drop:hover{border-color:var(--accent);background:var(--panel-3)}
-.file-drop.has-file{border-style:solid;border-color:rgba(155,123,255,.5)}
+.file-drop.has-file{border-style:solid;border-color:rgba(255,160,0,.5);background:rgba(255,160,0,.07)}
 .file-drop input[type="file"]{
   position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
 }
 .file-drop-icon{
-  width:28px;height:28px;border-radius:var(--r-xs);flex:none;
+  width:28px;height:28px;border-radius:var(--r-xs);
   background:var(--accent-soft);color:var(--accent);
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;flex:none;
 }
 .file-drop-icon svg{width:15px;height:15px}
 .file-drop-info{flex:1;min-width:0}
 .file-drop-name{
-  font-size:12px;font-weight:600;color:var(--text);
+  font-size:12px;font-weight:700;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .file-drop-hint{font-size:10px;color:var(--muted);margin-top:1px}
 .file-clear{
-  position:relative;z-index:2;width:24px;height:24px;border:0;
-  border-radius:var(--r-xs);background:var(--panel-3);color:var(--muted);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:color .2s ease,background .2s ease;
+  position:relative;z-index:2;width:24px;height:24px;border-radius:var(--r-xs);
+  border:0;background:var(--panel-3);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;
 }
 .file-clear:hover{color:var(--red);background:var(--red-soft)}
 .file-clear svg{width:13px;height:13px}
 
-/* ── Админ-панель: статистика, редактор, превью ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 13px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:38px;padding:0 16px;background:var(--accent-grad);
+  border:0;border-radius:var(--r-sm);
+  color:#0c0e13;font-size:12px;font-weight:800;letter-spacing:.3px;cursor:pointer;
+  transition:filter .2s ease,transform .15s ease;
+}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:scale(.98)}
+.btn.full{width:100%}
+.btn.ghost{
+  background:var(--panel-2);border:1px solid var(--line-hover);color:var(--text);
+}
+.btn.ghost:hover{background:var(--panel-3);border-color:var(--accent);color:var(--accent);filter:none}
+.btn.danger{background:var(--red-soft);border:1px solid rgba(255,107,107,.35);color:var(--red)}
+.btn.danger:hover{background:rgba(255,107,107,.24);filter:none}
+.btn svg{width:15px;height:15px}
+.row-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+
+/* Карточка профиля авторизованного пользователя */
+.profile-card{
+  display:flex;align-items:center;gap:14px;padding:15px;
+  background:var(--panel-2);border:1px solid var(--line);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-lg);margin-bottom:16px;
+}
+.profile-avatar{
+  width:46px;height:46px;border-radius:var(--r-md);background:var(--accent-grad);
+  color:#0c0e13;font-size:16px;font-weight:900;display:flex;align-items:center;
+  justify-content:center;flex:none;
+}
+.profile-card.is-admin .profile-avatar{background:linear-gradient(135deg,#3ddc84,#00bfa5)}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.profile-email{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* Админ-панель */
 .stats-bar{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
-  padding:16px 20px 0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;
 }
 .stat-box{
   background:var(--panel-2);border:1px solid var(--line);
+  border-left:3px solid var(--accent);
   border-radius:var(--r-md);padding:11px 14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
 .stat-val{font-size:18px;font-weight:800;color:var(--text)}
 .stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.notif-compose{
+  padding:12px;margin-bottom:13px;
+  background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:var(--r-md);
+}
+.notif-check-row{
+  display:flex;align-items:center;gap:9px;cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--text);user-select:none;
+}
+.notif-check-row input[type="checkbox"]{
+  width:16px;height:16px;accent-color:var(--accent);cursor:pointer;
+}
+.notif-compose-fields{
+  display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:10px;
+}
+.notif-compose-fields .field{margin-bottom:0}
+.notif-compose-fields input{background:var(--panel-2)!important}
 
 .admin-editor-grid{
   display:grid;grid-template-columns:1fr 205px;gap:18px;
   padding:16px;background:var(--panel-2);border:1px solid var(--line);
   border-radius:var(--r-lg);margin-bottom:18px;
 }
-.admin-editor-grid .field input,
-.admin-editor-grid .field select,
-.admin-editor-grid .file-drop{background:var(--panel)}
-.preview-box{display:flex;flex-direction:column;gap:8px}
-.preview-label{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--muted)}
-.preview-box .game-card{cursor:default;transform:none;box-shadow:none}
+.preview-box{display:flex;flex-direction:column;gap:8px;border-left:1px solid var(--line);padding-left:16px}
+.preview-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.3px}
+.preview-box .game-card{pointer-events:none;box-shadow:none}
 
-.toolbar-row{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin-bottom:12px;flex-wrap:wrap;
-}
-.filter-pills{display:flex;gap:6px;flex-wrap:wrap}
-.pill-btn{
-  height:32px;padding:0 12px;background:var(--panel-2);border:1px solid var(--line);
-  border-radius:var(--r-sm);color:var(--muted);font-size:11px;font-weight:700;
-  cursor:pointer;transition:all .2s ease;
-}
-.pill-btn:hover{color:var(--text);border-color:var(--line-hover)}
-.pill-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-
+.toolbar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .search-inline{
-  height:34px;min-width:220px;flex:1;max-width:300px;padding:0 12px;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
-  color:var(--text);font-size:12px;outline:none;
+  height:36px;flex:1;padding:0 12px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);color:var(--text);
+  font-size:13px;outline:none;transition:border-color .2s ease;
 }
 .search-inline:focus{border-color:var(--accent)}
+.filter-select{
+  height:36px;padding:0 11px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);color:var(--text);
+  font-size:12px;outline:none;cursor:pointer;
+}
 
-.list{display:flex;flex-direction:column;gap:8px}
+.list{display:flex;flex-direction:column;gap:7px}
 .list-row{
   display:flex;align-items:center;gap:12px;padding:10px 12px;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-md);
-  font-size:12px;transition:border-color .2s ease;
+  background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-md);font-size:12px;
+  transition:border-color .2s ease;
 }
 .list-row:hover{border-color:var(--line-hover)}
-.list-thumb{
-  width:38px;height:38px;border-radius:var(--r-sm);flex:none;
-  background:var(--panel-3) center/cover no-repeat;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:12px;color:var(--accent);
+.row-thumb{
+  width:42px;height:42px;border-radius:var(--r-xs);background:var(--panel-3) center/cover no-repeat;
+  flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);
+  border:1px solid var(--line);
 }
+.row-thumb svg{width:17px;height:17px}
 .list-row .grow{flex:1;min-width:0}
 .list-row .name{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.list-row .sub{font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.role{
-  font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;
-  border-radius:var(--r-xs);background:var(--panel-3);border:1px solid var(--line);color:var(--muted);
+.list-row .sub{font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row-file-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:1px 6px;border-radius:var(--r-xs);
+  background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:10px;
 }
-.role.admin{background:var(--accent-soft);border-color:rgba(155,123,255,.4);color:var(--accent)}
+.row-file-badge svg{width:11px;height:11px}
+
+.role{
+  font-size:10px;font-weight:800;letter-spacing:.4px;padding:3px 8px;
+  border-radius:var(--r-xs);background:var(--panel-3);color:var(--muted);
+}
+.role.admin{background:var(--green-soft);color:var(--green)}
+.mini{height:29px;padding:0 10px;font-size:11px;border-radius:var(--r-xs)}
 .row-btns{display:flex;align-items:center;gap:6px;flex:none}
 .empty-note{
   color:var(--muted);font-size:12px;padding:22px;text-align:center;
   background:var(--panel-2);border:1px dashed var(--line);border-radius:var(--r-md);
 }
 
-.hidden{display:none!important}
-
-/* Уведомления (Toast) */
 .toast{
   position:fixed;right:20px;bottom:20px;background:var(--panel-2);
-  border:1px solid var(--line-hover);border-left:4px solid var(--accent);
+  border:1px solid var(--line-hover);border-left:3px solid var(--accent);
   border-radius:var(--r-md);box-shadow:var(--shadow);
-  color:var(--text);font-size:12px;font-weight:600;padding:12px 16px;z-index:80;
+  color:var(--text);font-size:12px;font-weight:600;padding:11px 16px;z-index:80;
   opacity:0;transform:translateY(10px);pointer-events:none;
-  transition:opacity .25s ease,transform .25s ease;
+  transition:opacity .22s ease,transform .22s ease;
 }
 .toast.show{opacity:1;transform:none}
 
 /* ── Светлая тема ──────────────────────────────── */
 body.light{
-  --bg:#f2f3f7;--panel:#ffffff;--panel-2:#f6f7fa;--panel-3:#eceef3;
-  --line:#dfe1e8;--line-hover:#c8ccd8;--text:#18181f;--muted:#6c6d7a;
-  --accent:#6d4de0;--accent-hover:#5c3dd0;--accent-soft:rgba(109,77,224,.11);
-  --blue:#2d74da;--shadow:0 16px 40px rgba(15,15,30,.12);
+  --bg:#f2f4f8;--panel:#ffffff;--panel-2:#f6f8fb;--panel-3:#ebeef5;
+  --line:#dce1eb;--line-hover:#c5cddb;--text:#181c24;--muted:#646e82;
+  --accent:#e67e00;--accent-2:#d35400;--accent-soft:rgba(230,126,0,.12);
+  --green:#16a34a;--green-soft:rgba(22,163,74,.12);
+  --shadow:0 16px 40px rgba(24,28,36,.12);
+  --card-3d-shadow:0 8px 20px -4px rgba(24,28,36,.12);
+  background-image:none;
 }
-body.light .topbar{background:rgba(255,255,255,.92)}
-body.light .empty-card{color:#9a9ca8}
-body.light .nav-list li,body.light .genre-grid div,body.light .tab{color:#525360}
-body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
+body.light .topbar{background:rgba(255,255,255,.94)}
+body.light .empty-card{background:#f8f9fc;color:#9aa2b2}
+body.light .nav-list li,body.light .genre-grid div,body.light .tab{color:#4b5565}
+body.light .nav-list li{border-bottom-color:rgba(0,0,0,.04)}
+body.light .game-foot{border-top-color:rgba(0,0,0,.06)}
+body.light .notif-count{box-shadow:0 2px 6px rgba(0,0,0,.2)}
+body.light .avatar-circle,body.light .game-badge,body.light .btn:not(.ghost):not(.danger){color:#ffffff}
 
 @media(max-width:900px){
   .layout{grid-template-columns:1fr}
   .carousel{grid-template-columns:repeat(3,1fr)}
   .search input{width:150px}
-  .grid2,.grid3,.admin-editor-grid{grid-template-columns:1fr}
+  .grid2,.grid3,.admin-editor-grid,.notif-compose-fields{grid-template-columns:1fr}
+  .preview-box{padding-left:0;border-left:0;padding-top:14px;border-top:1px solid var(--line)}
   .stats-bar{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:560px){
   .carousel{grid-template-columns:repeat(2,1fr)}
   .topbar{padding:0 12px}
-  .search{display:none}
+  .search,.fb-chip{display:none}
+  .notif-popover{width:300px;right:-40px}
   .list-row{flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){
@@ -563,7 +716,6 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 <body>
 
 <svg class="sprite" aria-hidden="true">
-  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7zM12 7 7 9.5v5L12 17l5-2.5v-5z"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9zM10 21h4"/></symbol>
@@ -591,23 +743,41 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
   <symbol id="i-caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
-  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.8-3.6 5-5 8-5s6.2 1.4 8 5"/></symbol>
-  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 19c1.4-3 3.8-4.2 6-4.2s4.6 1.2 6 4.2"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5c2 0 3.6 1 4.5 3.5"/></symbol>
-  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></symbol>
-  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M16 17l5-5-5-5M21 12H9"/></symbol>
-  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
-  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
-  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20c1.5-3.5 4.2-5 7-5s5.5 1.5 7 5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 20"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
   <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
 </svg>
 
 <header class="topbar">
-  <div class="brand" id="brandHome">
-    <svg class="brand-mark"><use href="#i-mark"/></svg>
-    <span>ЗЕНИТ</span>
+  <div class="brand-group">
+    <div class="brand" id="brandHome" title="На главную ArdoUr">
+      <svg class="brand-logo" viewBox="0 0 36 36" aria-hidden="true">
+        <defs>
+          <linearGradient id="ardourGradMain" x1="4" y1="3" x2="32" y2="33" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffe082"/>
+            <stop offset="45%" stop-color="#ffa000"/>
+            <stop offset="100%" stop-color="#ff5722"/>
+          </linearGradient>
+          <linearGradient id="ardourGradFacet" x1="18" y1="6" x2="30" y2="31" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffb300" stop-opacity=".95"/>
+            <stop offset="100%" stop-color="#bf360c" stop-opacity=".9"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#ardourGradMain)" d="M18 2.5 5 10v16l13 7.5 13-7.5V10L18 2.5zm0 5.2 7.2 17.8h-4.1l-1.5-3.9h-3.2l-1.5 3.9h-4.1L18 7.7z"/>
+        <path fill="url(#ardourGradFacet)" d="M18 2.5v5.2l7.2 17.8h-4.1l-1.5-3.9H18v11.9l13-7.5V10L18 2.5z" opacity=".55"/>
+        <polygon fill="#fff3e0" points="18,12.2 16.3,17.4 19.7,17.4"/>
+      </svg>
+      <div class="brand-word">Ardo<span>Ur</span></div>
+    </div>
+    <div class="fb-chip" id="fbStatusPill" title="Синхронизация Firebase (ardour-e38a3)">
+      <span class="fb-dot"></span>
+      <span id="fbStatusText">ardour-e38a3 · подключение...</span>
+    </div>
   </div>
   <div class="top-actions">
     <label class="search">
@@ -620,9 +790,19 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     <button class="icon-btn" id="themeToggle" title="Сменить тему">
       <svg><use href="#i-moon"/></svg>
     </button>
-    <button class="icon-btn" id="notifBtn" title="Уведомления">
-      <svg><use href="#i-bell"/></svg><span class="badge-dot"></span>
-    </button>
+    <div class="notif-wrap">
+      <button class="icon-btn" id="notifBtn" title="Уведомления от администрации">
+        <svg><use href="#i-bell"/></svg>
+        <span class="notif-count hidden" id="notifBadge">0</span>
+      </button>
+      <div class="notif-popover" id="notifPopover">
+        <div class="notif-pop-head">
+          <strong>Уведомления ArdoUr</strong>
+          <button type="button" class="btn ghost mini" id="markAllReadBtn">Прочитано</button>
+        </div>
+        <div class="notif-pop-list" id="notifPopList"></div>
+      </div>
+    </div>
     <button class="account-pill" id="accountBtn" title="Вход и профиль">
       <svg><use href="#i-user"/></svg>
       <span>Войти</span>
@@ -631,22 +811,48 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 </header>
 
 <div class="wrap">
-  <nav class="tabs">
-    <button class="tab active"><svg><use href="#i-bolt"/></svg>НОВИНКИ</button>
-    <button class="tab"><svg><use href="#i-refresh"/></svg>ОБНОВЛЕНИЯ</button>
-    <button class="tab"><svg><use href="#i-crown"/></svg>ТОП 250</button>
-    <button class="tab"><svg><use href="#i-trophy"/></svg>ИГРЫ ГОДА <svg class="caret"><use href="#i-caret"/></svg></button>
-  </nav>
+  <div class="nav-toolbar">
+    <nav class="tabs" id="topTabs">
+      <button class="tab active" data-tab="new"><svg><use href="#i-bolt"/></svg>НОВИНКИ</button>
+      <button class="tab" data-tab="updates"><svg><use href="#i-refresh"/></svg>ОБНОВЛЕНИЯ</button>
+      <button class="tab" data-tab="top"><svg><use href="#i-crown"/></svg>ТОП 250</button>
+      <div class="tab-group" id="yearTabGroup">
+        <button class="tab" data-tab="goty" id="gotyTabBtn">
+          <svg><use href="#i-trophy"/></svg><span id="gotyLabel">ИГРЫ ГОДА</span> <svg class="caret"><use href="#i-caret"/></svg>
+        </button>
+        <div class="year-menu" id="yearMenu">
+          <button type="button" class="active" data-year="all">Все годы</button>
+          <button type="button" data-year="2026">2026 год</button>
+          <button type="button" data-year="2025">2025 год</button>
+          <button type="button" data-year="2024">2024 год</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sort-controls">
+      <button type="button" class="active-filter-chip hidden" id="clearTagFilterBtn" title="Сбросить выбранный жанр/категорию">
+        <span id="activeTagLabel">Фильтр</span>
+        <svg><use href="#i-close"/></svg>
+      </button>
+      <span class="sort-label">Сортировка:</span>
+      <select class="sort-select" id="sortSelect" aria-label="Сортировка каталога">
+        <option value="newest">Сначала новые</option>
+        <option value="rating">По рейтингу</option>
+        <option value="title">По названию (А–Я)</option>
+        <option value="files">Только с файлами</option>
+      </select>
+    </div>
+  </div>
 
   <div class="layout">
     <main class="content">
       <section class="block">
         <div class="section-head">
           <div class="title-row">
-            <h2>ВЫШЕДШИЕ НОВИНКИ</h2>
-            <a href="#" class="accent-link">ОЖИДАЕМЫЕ РЕЛИЗЫ</a>
+            <h2 id="releasesHeading">ВЫШЕДШИЕ НОВИНКИ</h2>
+            <a href="#" class="accent-link" id="expectedLink">ОЖИДАЕМЫЕ РЕЛИЗЫ</a>
           </div>
-          <p class="sub">Наиболее популярные релизы</p>
+          <p class="sub" id="releasesSub">Наиболее популярные релизы</p>
         </div>
         <div class="carousel" id="railReleases"></div>
         <div class="rail-foot" data-rail="releases">
@@ -660,8 +866,8 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 
       <section class="block">
         <div class="section-head">
-          <div class="title-row"><h2>ИГРЫ НА ПК ТОРРЕНТ</h2></div>
-          <p class="sub">Вышедшие новинки и обновления</p>
+          <div class="title-row"><h2 id="pcHeading">ИГРЫ НА ПК ТОРРЕНТ</h2></div>
+          <p class="sub" id="pcSub">Вышедшие новинки и обновления</p>
         </div>
         <div class="carousel" id="railPc"></div>
         <div class="rail-foot" data-rail="pc">
@@ -677,33 +883,33 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     <aside class="sidebar">
       <div class="side-block">
         <h3>НАВИГАЦИЯ</h3>
-        <ul class="nav-list">
-          <li><svg><use href="#i-clock"/></svg>Ранний доступ</li>
-          <li><svg><use href="#i-speaker"/></svg>Русская озвучка</li>
-          <li><svg><use href="#i-monitor"/></svg>Для слабых ПК</li>
-          <li><svg><use href="#i-book"/></svg>Старые хиты</li>
-          <li><svg><use href="#i-gamepad"/></svg>Подборки геймпада</li>
-          <li><svg><use href="#i-vr"/></svg>VR игры</li>
-          <li><svg><use href="#i-net"/></svg>По сети и пирате</li>
-          <li><svg><use href="#i-console"/></svg>Порты с консолей</li>
-          <li><svg><use href="#i-gift"/></svg>GOG разработки</li>
-          <li><svg><use href="#i-shield"/></svg>Игры с Денуво</li>
-          <li><svg><use href="#i-key"/></svg>Активация игр</li>
+        <ul class="nav-list" id="sideNavList">
+          <li data-tag="Ранний доступ"><svg><use href="#i-clock"/></svg>Ранний доступ</li>
+          <li data-tag="Русская озвучка"><svg><use href="#i-speaker"/></svg>Русская озвучка</li>
+          <li data-tag="Для слабых ПК"><svg><use href="#i-monitor"/></svg>Для слабых ПК</li>
+          <li data-tag="Старые хиты"><svg><use href="#i-book"/></svg>Старые хиты</li>
+          <li data-tag="Подборки геймпада"><svg><use href="#i-gamepad"/></svg>Подборки геймпада</li>
+          <li data-tag="VR игры"><svg><use href="#i-vr"/></svg>VR игры</li>
+          <li data-tag="По сети"><svg><use href="#i-net"/></svg>По сети и пирате</li>
+          <li data-tag="Порты с консолей"><svg><use href="#i-console"/></svg>Порты с консолей</li>
+          <li data-tag="GOG"><svg><use href="#i-gift"/></svg>GOG разработки</li>
+          <li data-tag="Денуво"><svg><use href="#i-shield"/></svg>Игры с Денуво</li>
+          <li data-tag="Активация"><svg><use href="#i-key"/></svg>Активация игр</li>
         </ul>
       </div>
       <div class="side-block">
         <h3>ЖАНР</h3>
-        <div class="genre-grid">
-          <div><svg><use href="#i-bolt"/></svg>Экшен</div>
-          <div><svg><use href="#i-sword"/></svg>RPG</div>
-          <div><svg><use href="#i-grid"/></svg>Стратегии</div>
-          <div><svg><use href="#i-book"/></svg>Приключения</div>
-          <div><svg><use href="#i-grid"/></svg>Симуляторы</div>
-          <div><svg><use href="#i-road"/></svg>Гонки</div>
-          <div><svg><use href="#i-puzzle"/></svg>Игры</div>
-          <div><svg><use href="#i-puzzle"/></svg>Казуальные</div>
-          <div><svg><use href="#i-target"/></svg>Спортивные</div>
-          <div><svg><use href="#i-target"/></svg>Шутеры</div>
+        <div class="genre-grid" id="sideGenreGrid">
+          <div data-tag="Экшен"><svg><use href="#i-bolt"/></svg>Экшен</div>
+          <div data-tag="RPG"><svg><use href="#i-sword"/></svg>RPG</div>
+          <div data-tag="Стратегии"><svg><use href="#i-grid"/></svg>Стратегии</div>
+          <div data-tag="Приключения"><svg><use href="#i-book"/></svg>Приключения</div>
+          <div data-tag="Симуляторы"><svg><use href="#i-grid"/></svg>Симуляторы</div>
+          <div data-tag="Гонки"><svg><use href="#i-road"/></svg>Гонки</div>
+          <div data-tag="Инди"><svg><use href="#i-puzzle"/></svg>Инди</div>
+          <div data-tag="Казуальные"><svg><use href="#i-puzzle"/></svg>Казуальные</div>
+          <div data-tag="Спортивные"><svg><use href="#i-target"/></svg>Спортивные</div>
+          <div data-tag="Шутеры"><svg><use href="#i-target"/></svg>Шутеры</div>
         </div>
       </div>
     </aside>
@@ -717,60 +923,14 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
       <div class="modal-head-title">
         <div class="modal-icon"><svg><use href="#i-user"/></svg></div>
         <div>
-          <h3 id="authModalTitle">Вход в ЗЕНИТ</h3>
+          <h3 id="authModalTitle">Вход в ArdoUr</h3>
           <div class="modal-sub" id="authModalSub">Авторизация и управление профилем</div>
         </div>
       </div>
       <button class="close" data-close="authOverlay" aria-label="Закрыть"><svg><use href="#i-close"/></svg></button>
     </div>
 
-    <!-- Вид 1: Гость (Вход / Регистрация) -->
-    <div id="authGuestView">
-      <div class="seg-tabs">
-        <button id="authTabLogin" class="active"><svg><use href="#i-key"/></svg>Вход</button>
-        <button id="authTabReg"><svg><use href="#i-plus"/></svg>Регистрация</button>
-      </div>
-
-      <form class="pane" id="authPaneLogin" novalidate>
-        <div class="field">
-          <label for="loginEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
-          <input type="email" id="loginEmail" placeholder="name@mail.com" autocomplete="email">
-        </div>
-        <div class="field">
-          <label for="loginPass">ПАРОЛЬ</label>
-          <div class="input-wrap">
-            <input type="password" id="loginPass" placeholder="Введите пароль" autocomplete="current-password">
-            <button type="button" class="eye-btn" data-eye="loginPass" title="Показать пароль">
-              <svg><use href="#i-eye"/></svg>
-            </button>
-          </div>
-        </div>
-        <button type="submit" class="btn full">Войти в аккаунт</button>
-      </form>
-
-      <form class="pane hidden" id="authPaneReg" novalidate>
-        <div class="field">
-          <label for="regName">НИКНЕЙМ / ИМЯ</label>
-          <input type="text" id="regName" placeholder="Например, Алекс" autocomplete="name">
-        </div>
-        <div class="field">
-          <label for="regEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
-          <input type="email" id="regEmail" placeholder="name@mail.com" autocomplete="email">
-        </div>
-        <div class="field">
-          <label for="regPass">ПАРОЛЬ (МИНИМУМ 4 СИМВОЛА)</label>
-          <div class="input-wrap">
-            <input type="password" id="regPass" placeholder="Придумайте пароль" autocomplete="new-password">
-            <button type="button" class="eye-btn" data-eye="regPass" title="Показать пароль">
-              <svg><use href="#i-eye"/></svg>
-            </button>
-          </div>
-        </div>
-        <button type="submit" class="btn full">Создать аккаунт</button>
-      </form>
-    </div>
-
-    <!-- Вид 2: Авторизованный пользователь -->
+    <!-- Вид для авторизованного пользователя -->
     <div class="pane hidden" id="authProfileView">
       <div class="profile-card" id="profileCard">
         <div class="profile-avatar" id="profileAvatar">ЖК</div>
@@ -792,10 +952,58 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
         </button>
       </div>
     </div>
+
+    <!-- Вид для гостя (Вход / Регистрация) -->
+    <div id="authGuestView">
+      <div class="seg-wrap">
+        <div class="seg-tabs">
+          <button type="button" id="authTabLogin" class="active">Вход</button>
+          <button type="button" id="authTabReg">Регистрация</button>
+        </div>
+      </div>
+
+      <form class="pane" id="authPaneLogin">
+        <div class="field">
+          <label for="loginEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+          <input type="email" id="loginEmail" placeholder="name@mail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="loginPass">ПАРОЛЬ</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPass" placeholder="Введите пароль" autocomplete="current-password" required>
+            <button type="button" class="pass-toggle" data-toggle-pass="loginPass" aria-label="Показать пароль">
+              <svg><use href="#i-eye"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn full" id="loginBtn">Войти в аккаунт</button>
+      </form>
+
+      <form class="pane hidden" id="authPaneReg">
+        <div class="field">
+          <label for="regName">ОТОБРАЖАЕМОЕ ИМЯ</label>
+          <input type="text" id="regName" placeholder="Например: Алексей" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="regEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+          <input type="email" id="regEmail" placeholder="name@mail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="regPass">ПАРОЛЬ</label>
+          <div class="input-wrap">
+            <input type="password" id="regPass" placeholder="Минимум 4 символа" autocomplete="new-password" required>
+            <button type="button" class="pass-toggle" data-toggle-pass="regPass" aria-label="Показать пароль">
+              <svg><use href="#i-eye"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn full" id="regBtn">Создать аккаунт</button>
+      </form>
+    </div>
   </div>
 </div>
 
-<!-- ── Модальное окно: Админ-панель ── -->
+<!-- ── Модальное окно: Админ-панель ─────────────────── -->
 <div class="overlay" id="adminOverlay">
   <div class="modal wide">
     <div class="modal-head">
@@ -803,41 +1011,42 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
         <div class="modal-icon"><svg><use href="#i-shield"/></svg></div>
         <div>
           <h3>Панель администратора</h3>
-          <div class="modal-sub">Управление каталогом релизов и правами пользователей</div>
+          <div class="modal-sub">Управление каталогом ArdoUr, файлами, уведомлениями и ролями</div>
         </div>
       </div>
       <button class="close" data-close="adminOverlay" aria-label="Закрыть"><svg><use href="#i-close"/></svg></button>
     </div>
 
-    <!-- Сводка по сайту -->
-    <div class="stats-bar">
-      <div class="stat-box">
-        <div class="stat-val" id="statTotalGames">0</div>
-        <div class="stat-lbl">Всего игр</div>
+    <div class="seg-wrap">
+      <div class="seg-tabs">
+        <button type="button" id="adminTabGames" class="active">Каталог игр</button>
+        <button type="button" id="adminTabUsers">Пользователи и роли</button>
       </div>
-      <div class="stat-box">
-        <div class="stat-val" id="statReleases">0</div>
-        <div class="stat-lbl">Вышедшие новинки</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="statPc">0</div>
-        <div class="stat-lbl">ПК торрент</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="statUsers">0</div>
-        <div class="stat-lbl">Пользователей</div>
-      </div>
-    </div>
-
-    <div class="seg-tabs">
-      <button id="adminTabGames" class="active"><svg><use href="#i-gamepad"/></svg>Каталог игр</button>
-      <button id="adminTabUsers"><svg><use href="#i-users"/></svg>Пользователи</button>
     </div>
 
     <!-- Вкладка: Игры -->
     <div class="pane" id="adminPaneGames">
+      <div class="stats-bar">
+        <div class="stat-box">
+          <div class="stat-val" id="statTotalGames">0</div>
+          <div class="stat-lbl">Всего игр</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statReleases">0</div>
+          <div class="stat-lbl">В «Новинках»</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statPc">0</div>
+          <div class="stat-lbl">В «ПК торрент»</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statUsers">1</div>
+          <div class="stat-lbl">Участников</div>
+        </div>
+      </div>
+
       <div class="admin-editor-grid">
-        <form id="gameForm" novalidate>
+        <form id="gameForm">
           <div class="grid2">
             <div class="field">
               <label for="gSection">РАЗДЕЛ КАТАЛОГА</label>
@@ -848,7 +1057,7 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
             </div>
             <div class="field">
               <label for="gTitle">НАЗВАНИЕ ИГРЫ *</label>
-              <input type="text" id="gTitle" placeholder="Например, S.T.A.L.K.E.R. 2">
+              <input type="text" id="gTitle" placeholder="Например: Cyberpunk 2077" required>
             </div>
           </div>
 
@@ -863,8 +1072,30 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
             </div>
             <div class="field">
               <label for="gBadge">ПЛАШКА (БЕЙДЖ)</label>
-              <input type="text" id="gBadge" placeholder="ПРЕМЬЕРА / REPACK">
+              <input type="text" id="gBadge" placeholder="ПРЕМЬЕРА / ОБНОВЛЕНО">
             </div>
+          </div>
+
+          <div class="field">
+            <label for="gTag">ЖАНР ИЛИ КАТЕГОРИЯ</label>
+            <select id="gTag">
+              <option value="">Без привязки к жанру</option>
+              <option value="Экшен">Экшен</option>
+              <option value="RPG">RPG</option>
+              <option value="Шутеры">Шутеры</option>
+              <option value="Приключения">Приключения</option>
+              <option value="Стратегии">Стратегии</option>
+              <option value="Симуляторы">Симуляторы</option>
+              <option value="Гонки">Гонки</option>
+              <option value="Инди">Инди</option>
+              <option value="Казуальные">Казуальные</option>
+              <option value="Спортивные">Спортивные</option>
+              <option value="Ранний доступ">Ранний доступ</option>
+              <option value="Русская озвучка">Русская озвучка</option>
+              <option value="Для слабых ПК">Для слабых ПК</option>
+              <option value="По сети">По сети и пирате</option>
+              <option value="VR игры">VR игры</option>
+            </select>
           </div>
 
           <div class="grid2">
@@ -899,6 +1130,24 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
             </div>
           </div>
 
+          <!-- Кастомное уведомление для всех пользователей -->
+          <div class="notif-compose">
+            <label class="notif-check-row">
+              <input type="checkbox" id="sendNotifCheck">
+              <span>Отправить кастомное уведомление всем пользователям</span>
+            </label>
+            <div class="notif-compose-fields hidden" id="notifComposeFields">
+              <div class="field">
+                <label for="notifCustomTitle">ЗАГОЛОВОК УВЕДОМЛЕНИЯ</label>
+                <input type="text" id="notifCustomTitle" placeholder="Например: Обновлён торрент-файл!">
+              </div>
+              <div class="field">
+                <label for="notifCustomText">ТЕКСТ СООБЩЕНИЯ ДЛЯ ВСЕХ</label>
+                <input type="text" id="notifCustomText" placeholder="Добавлен свежий репак v1.2, можно качать">
+              </div>
+            </div>
+          </div>
+
           <div class="row-actions">
             <button type="submit" class="btn" id="publishBtn">
               <svg><use href="#i-plus"/></svg><span id="publishBtnText">Опубликовать игру</span>
@@ -907,7 +1156,6 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
           </div>
         </form>
 
-        <!-- Живое предпросмотр-превью карточки -->
         <div class="preview-box">
           <div class="preview-label">ПРЕДПРОСМОТР КАРТОЧКИ</div>
           <div class="game-card" id="livePreviewCard"></div>
@@ -915,26 +1163,20 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
       </div>
 
       <div class="toolbar-row">
-        <div class="filter-pills" id="gameSectionFilter">
-          <button type="button" class="pill-btn active" data-sec="all">Все</button>
-          <button type="button" class="pill-btn" data-sec="releases">Новинки</button>
-          <button type="button" class="pill-btn" data-sec="pc">ПК торрент</button>
-        </div>
         <input type="text" class="search-inline" id="adminGameSearch" placeholder="Фильтр по названию игры...">
+        <select class="filter-select" id="adminSectionFilter">
+          <option value="all">Все разделы</option>
+          <option value="releases">Новинки</option>
+          <option value="pc">ПК торрент</option>
+        </select>
       </div>
-
       <div class="list" id="adminGamesList"></div>
     </div>
 
     <!-- Вкладка: Пользователи -->
     <div class="pane hidden" id="adminPaneUsers">
       <div class="toolbar-row">
-        <div class="filter-pills" id="userRoleFilter">
-          <button type="button" class="pill-btn active" data-role-filter="all">Все</button>
-          <button type="button" class="pill-btn" data-role-filter="admin">Админы</button>
-          <button type="button" class="pill-btn" data-role-filter="user">Пользователи</button>
-        </div>
-        <input type="text" class="search-inline" id="userSearch" placeholder="Поиск по имени или почте...">
+        <input type="text" class="search-inline" id="userSearch" placeholder="Поиск участника по имени или почте...">
       </div>
       <div class="list" id="adminUsersList"></div>
     </div>
@@ -943,33 +1185,42 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 
 <div class="toast" id="toast"></div>
 
-<script>
-/* ЗЕНИТ — клиентское состояние, авторизация и панель администратора */
+<script type="module">
+/* ArdoUr — клиентское состояние, авторизация, админ-панель и синхронизация Firebase */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
 (function(){
   'use strict';
 
   var ADMIN_EMAIL = 'vovsenktzena@gmail.com';
-  var REMOTE = '';
+  var LS_SESSION = 'ardour_session_id';
 
-  var K_USERS = 'zenit_users_v1';
-  var K_GAMES = 'zenit_games_v1';
-  var K_SESSION = 'zenit_session_v1';
-  var K_THEME = 'zenit_theme_v1';
+  /* Конфигурация Firebase проекта ardour-e38a3 */
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBnrhKfKmwC78oY4Q3rovPFw5dr7EU3_T0",
+    authDomain: "ardour-e38a3.firebaseapp.com",
+    projectId: "ardour-e38a3",
+    storageBucket: "ardour-e38a3.firebasestorage.app",
+    messagingSenderId: "382282590819",
+    appId: "1:382282590819:web:c339ad86015a5bd4342656",
+    measurementId: "G-BGP9Q8R1B7"
+  };
 
-  function read(key, fallback){
+  if(typeof __firebase_config !== 'undefined' && __firebase_config){
     try{
-      var raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    }catch(e){ return fallback; }
+      var envCfg = JSON.parse(__firebase_config);
+      if(envCfg && envCfg.apiKey) FIREBASE_CONFIG = envCfg;
+    }catch(e){}
   }
-  function write(key, value){
-    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
-    if(REMOTE){
-      fetch(REMOTE + '?key=' + encodeURIComponent(key), {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(value)
-      }).catch(function(){});
-    }
-  }
+
+  var appId = typeof __app_id !== 'undefined' ? __app_id : 'ardour-e38a3';
+  var db = null;
+  var fbAuth = null;
+  var fbReady = false;
+
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function hash(s){
     var h=5381, i;
@@ -987,144 +1238,528 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
     return (bytes / (1024 * 1024)).toFixed(1) + ' МБ';
   }
+  function formatTime(iso){
+    if(!iso) return '';
+    try{
+      var d = new Date(iso);
+      return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) + ' · ' +
+             d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    }catch(e){ return ''; }
+  }
 
-  /* Локальное хранилище бинарных файлов (обложек и .zip/.torrent) через IndexedDB с резервом в памяти */
-  var FileStore = (function(){
-    var dbPromise = null;
-    var mem = {};
-
-    function openDB(){
-      if(dbPromise) return dbPromise;
-      dbPromise = new Promise(function(resolve){
-        try{
-          var req = indexedDB.open('zenit_files_db', 1);
-          req.onupgradeneeded = function(e){
-            var db = e.target.result;
-            if(!db.objectStoreNames.contains('blobs')) db.createObjectStore('blobs');
-          };
-          req.onsuccess = function(e){ resolve(e.target.result); };
-          req.onerror = function(){ resolve(null); };
-        }catch(err){ resolve(null); }
-      });
-      return dbPromise;
-    }
-
-    return {
-      put: function(key, blob){
-        mem[key] = blob;
-        return openDB().then(function(db){
-          if(!db) return;
-          return new Promise(function(res){
-            try{
-              var tx = db.transaction('blobs', 'readwrite');
-              tx.objectStore('blobs').put(blob, key);
-              tx.oncomplete = function(){ res(); };
-              tx.onerror = function(){ res(); };
-            }catch(e){ res(); }
-          });
-        });
-      },
-      get: function(key){
-        if(mem[key]) return Promise.resolve(mem[key]);
-        return openDB().then(function(db){
-          if(!db) return null;
-          return new Promise(function(res){
-            try{
-              var tx = db.transaction('blobs', 'readonly');
-              var req = tx.objectStore('blobs').get(key);
-              req.onsuccess = function(){
-                if(req.result) mem[key] = req.result;
-                res(req.result || null);
-              };
-              req.onerror = function(){ res(null); };
-            }catch(e){ res(null); }
-          });
-        });
-      },
-      del: function(key){
-        delete mem[key];
-        return openDB().then(function(db){
-          if(!db) return;
-          return new Promise(function(res){
-            try{
-              var tx = db.transaction('blobs', 'readwrite');
-              tx.objectStore('blobs').delete(key);
-              tx.oncomplete = function(){ res(); };
-              tx.onerror = function(){ res(); };
-            }catch(e){ res(); }
-          });
-        });
-      }
-    };
-  })();
-
-  var objectUrlCache = {};
-  function getCoverUrl(gameId, fallbackUrl){
-    if(objectUrlCache[gameId]) return Promise.resolve(objectUrlCache[gameId]);
-    return FileStore.get('cover_' + gameId).then(function(blob){
-      if(blob){
-        var url = URL.createObjectURL(blob);
-        objectUrlCache[gameId] = url;
-        return url;
-      }
-      return fallbackUrl || '';
+  function blobToDataUrl(blob){
+    return new Promise(function(resolve){
+      if(!blob){ resolve(''); return; }
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result || ''); };
+      reader.onerror = function(){ resolve(''); };
+      reader.readAsDataURL(blob);
     });
   }
 
-  /* Генерация приятного градиента для обложки, если файл не загружен */
-  function coverGradient(seed){
-    var palettes = [
-      'linear-gradient(135deg,#2b2248 0%,#181822 100%)',
-      'linear-gradient(135deg,#1d334a 0%,#151821 100%)',
-      'linear-gradient(135deg,#203b2c 0%,#141918 100%)',
-      'linear-gradient(135deg,#422334 0%,#18151d 100%)',
-      'linear-gradient(135deg,#3a2e1d 0%,#18171c 100%)'
-    ];
-    var idx = Math.abs(String(seed||'').split('').reduce(function(a,c){return a+c.charCodeAt(0);},0)) % palettes.length;
-    return palettes[idx];
+  /* Сжатие обложки перед сохранением в облако, чтобы она отображалась у всех пользователей */
+  function compressImageToDataUrl(blob){
+    return new Promise(function(resolve){
+      if(!blob){ resolve(''); return; }
+      var img = new Image();
+      var tempUrl = URL.createObjectURL(blob);
+      img.onload = function(){
+        try{
+          var maxW = 460;
+          var scale = img.width > maxW ? (maxW / img.width) : 1;
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(tempUrl);
+          resolve(canvas.toDataURL('image/webp', 0.82));
+        }catch(err){
+          URL.revokeObjectURL(tempUrl);
+          blobToDataUrl(blob).then(resolve);
+        }
+      };
+      img.onerror = function(){
+        URL.revokeObjectURL(tempUrl);
+        blobToDataUrl(blob).then(resolve);
+      };
+      img.src = tempUrl;
+    });
   }
 
-  var users = read(K_USERS, []);
-  var games = read(K_GAMES, []);
-  var sessionId = read(K_SESSION, null);
+  function dataUrlToBlob(dataUrl){
+    try{
+      var arr = dataUrl.split(',');
+      var mimeMatch = arr[0].match(/:(.*?);/);
+      var mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+      var bstr = atob(arr[1]);
+      var n = bstr.length;
+      var u8arr = new Uint8Array(n);
+      while(n--) u8arr[n] = bstr.charCodeAt(n);
+      return new Blob([u8arr], { type: mime });
+    }catch(e){ return null; }
+  }
 
-  if(read(K_THEME, 'dark') === 'light'){
-    document.body.classList.add('light');
+  /* Локальное хранилище бинарных файлов (обложек и .zip/.torrent) через IndexedDB */
+  var DB_NAME = 'ardour_files_db';
+  var STORE_NAME = 'blobs';
+  var objectUrlCache = {};
+
+  function openFilesDB(){
+    return new Promise(function(resolve, reject){
+      if(!window.indexedDB){ reject(new Error('No IndexedDB')); return; }
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function(e){
+        var idb = e.target.result;
+        if(!idb.objectStoreNames.contains(STORE_NAME)){
+          idb.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+
+  function putBlob(key, blob){
+    return openFilesDB().then(function(idb){
+      return new Promise(function(resolve, reject){
+        var tx = idb.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(blob, key);
+        tx.oncomplete = function(){
+          if(objectUrlCache[key]){
+            URL.revokeObjectURL(objectUrlCache[key]);
+            delete objectUrlCache[key];
+          }
+          resolve();
+        };
+        tx.onerror = function(){ reject(tx.error); };
+      });
+    }).catch(function(){});
+  }
+
+  function getBlob(key){
+    return openFilesDB().then(function(idb){
+      return new Promise(function(resolve){
+        var tx = idb.transaction(STORE_NAME, 'readonly');
+        var req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = function(){ resolve(req.result || null); };
+        req.onerror = function(){ resolve(null); };
+      });
+    }).catch(function(){ return null; });
+  }
+
+  function delBlob(key){
+    return openFilesDB().then(function(idb){
+      return new Promise(function(resolve){
+        var tx = idb.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(key);
+        tx.oncomplete = function(){
+          if(objectUrlCache[key]){
+            URL.revokeObjectURL(objectUrlCache[key]);
+            delete objectUrlCache[key];
+          }
+          resolve();
+        };
+        tx.onerror = function(){ resolve(); };
+      });
+    }).catch(function(){});
+  }
+
+  function getCoverUrl(game){
+    if(game.coverDataUrl) return Promise.resolve(game.coverDataUrl);
+    if(!game.hasCover) return Promise.resolve(game.image || '');
+    var key = 'cover_' + game.id;
+    if(objectUrlCache[key]) return Promise.resolve(objectUrlCache[key]);
+    return getBlob(key).then(function(blob){
+      if(!blob) return game.image || '';
+      var url = URL.createObjectURL(blob);
+      objectUrlCache[key] = url;
+      return url;
+    });
+  }
+
+  function downloadGameFile(game){
+    if(!game.fileName){
+      toast('К этой игре пока не прикреплён файл для скачивания');
+      return;
+    }
+    var triggerDownload = function(blob){
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = game.fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      toast('Скачивание: ' + game.fileName);
+    };
+
+    getBlob('file_' + game.id).then(function(blob){
+      if(blob){
+        triggerDownload(blob);
+      } else if(game.fileDataUrl){
+        var cloudBlob = dataUrlToBlob(game.fileDataUrl);
+        if(cloudBlob) triggerDownload(cloudBlob);
+        else toast('Не удалось декодировать файл из облака');
+      } else {
+        toast('Файл недоступен — перезагрузите его в админ-панели');
+      }
+    });
+  }
+
+  var users = [];
+  var games = [];
+  var notifications = [];
+  var readNotifIds = {};
+  var initialNotifSyncDone = false;
+  var session = null;
+
+  function saveSessionId(id){
+    try{
+      if(id) localStorage.setItem(LS_SESSION, id);
+      else localStorage.removeItem(LS_SESSION);
+    }catch(e){}
+  }
+  function loadSessionId(){
+    try{ return localStorage.getItem(LS_SESSION) || ''; }
+    catch(e){ return ''; }
+  }
+
+  /* Синхронизация с Firestore (/artifacts/{appId}/public/data/...) */
+  function syncUserToCloud(userObj){
+    if(!fbReady || !db) return;
+    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userObj.id), userObj)
+      .catch(function(err){ console.warn('Firestore user sync:', err); });
+  }
+  function removeUserFromCloud(userId){
+    if(!fbReady || !db) return;
+    deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId))
+      .catch(function(err){ console.warn('Firestore user delete:', err); });
+  }
+  function syncGameToCloud(gameObj){
+    if(!fbReady || !db) return;
+    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameObj.id), gameObj)
+      .catch(function(err){
+        console.warn('Firestore game sync:', err);
+        toast('Ошибка сохранения в облако — проверьте правила Firestore');
+      });
+  }
+  function removeGameFromCloud(gameId){
+    if(!fbReady || !db) return;
+    deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId))
+      .catch(function(err){ console.warn('Firestore game delete:', err); });
+  }
+  function syncNotifToCloud(notifObj){
+    if(!fbReady || !db) return;
+    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'notifications', notifObj.id), notifObj)
+      .catch(function(err){ console.warn('Firestore notif sync:', err); });
+  }
+  function removeNotifFromCloud(notifId){
+    if(!fbReady || !db) return;
+    deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'notifications', notifId))
+      .catch(function(err){ console.warn('Firestore notif delete:', err); });
   }
 
   /* Гарантируем существование главного аккаунта администратора */
   function ensureAdmin(){
-    var admin = users.find(function(u){ return u.email.toLowerCase() === ADMIN_EMAIL; });
+    var admin = users.find(function(u){ return u.email && u.email.toLowerCase() === ADMIN_EMAIL; });
     if(!admin){
       admin = {
-        id:uid(), name:'Администратор', email:ADMIN_EMAIL, pass:hash('zenit'),
-        role:'admin', created:new Date().toISOString()
+        id: 'admin_root_ardour',
+        name: 'Администратор',
+        email: ADMIN_EMAIL,
+        pass: hash('zenit'),
+        role: 'admin',
+        created: new Date().toISOString()
       };
       users.unshift(admin);
+      syncUserToCloud(admin);
     } else if(admin.role !== 'admin'){
       admin.role = 'admin';
+      syncUserToCloud(admin);
     }
-    write(K_USERS, users);
+
+    var savedId = loadSessionId();
+    if(!session && savedId){
+      var found = users.find(function(u){ return u.id === savedId; });
+      if(found){
+        session = found;
+        updateHeader();
+      }
+    }
   }
   ensureAdmin();
-  var session = users.find(function(u){ return u.id === sessionId; }) || null;
+
+  async function initFirebase(){
+    var pill = document.getElementById('fbStatusPill');
+    var label = document.getElementById('fbStatusText');
+
+    try{
+      var app = initializeApp(FIREBASE_CONFIG);
+      try{ getAnalytics(app); }catch(e){}
+      fbAuth = getAuth(app);
+      db = getFirestore(app);
+
+      try{
+        if(typeof __initial_auth_token !== 'undefined' && __initial_auth_token){
+          await signInWithCustomToken(fbAuth, __initial_auth_token);
+        } else {
+          await signInAnonymously(fbAuth);
+        }
+      }catch(authErr){
+        console.warn('Anonymous auth note:', authErr);
+      }
+
+      fbReady = true;
+      ensureAdmin();
+
+      pill.classList.add('online');
+      label.textContent = 'ardour-e38a3 · синхронизировано';
+
+      /* Подписка на коллекцию игр — мгновенно обновляется у всех пользователей */
+      var gamesCol = collection(db, 'artifacts', appId, 'public', 'data', 'games');
+      onSnapshot(gamesCol, function(snap){
+        var list = [];
+        snap.forEach(function(d){ list.push(d.data()); });
+        list.sort(function(a,b){ return String(b.updatedAt||b.created||'').localeCompare(String(a.updatedAt||a.created||'')); });
+        games = list;
+        renderRails();
+        if(document.getElementById('adminOverlay').classList.contains('open')){
+          updateAdminStats();
+          renderAdminGames();
+        }
+      }, function(err){
+        console.warn('Firestore games listener error:', err);
+        pill.classList.remove('online');
+        label.textContent = 'ardour-e38a3 · проверь правила БД';
+      });
+
+      /* Подписка на коллекцию пользователей */
+      var usersCol = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+      onSnapshot(usersCol, function(snap){
+        var list = [];
+        snap.forEach(function(d){ list.push(d.data()); });
+        users = list;
+        ensureAdmin();
+        if(session){
+          var fresh = users.find(function(u){ return u.id === session.id; });
+          if(fresh){
+            session = fresh;
+            updateHeader();
+          }
+        }
+        if(document.getElementById('adminOverlay').classList.contains('open')){
+          updateAdminStats();
+          renderAdminUsers();
+        }
+      }, function(err){
+        console.warn('Firestore users listener error:', err);
+      });
+
+      /* Подписка на глобальные уведомления от администратора */
+      var notifsCol = collection(db, 'artifacts', appId, 'public', 'data', 'notifications');
+      onSnapshot(notifsCol, function(snap){
+        var list = [];
+        snap.forEach(function(d){ list.push(d.data()); });
+        list.sort(function(a,b){ return String(b.created||'').localeCompare(String(a.created||'')); });
+
+        if(initialNotifSyncDone && list.length > notifications.length){
+          var newest = list[0];
+          if(newest && !readNotifIds[newest.id]){
+            toast(newest.title + (newest.body ? ' — ' + newest.body : ''));
+          }
+        }
+        notifications = list;
+        initialNotifSyncDone = true;
+        renderNotifications();
+      }, function(err){
+        console.warn('Firestore notifications listener error:', err);
+      });
+    }catch(err){
+      console.warn('Firebase init error:', err);
+      pill.classList.remove('online');
+      label.textContent = 'ardour-e38a3 · ошибка подключения';
+    }
+  }
 
   function toast(msg){
     var el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toast._t);
-    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 3200);
   }
-  function saveSession(){ write(K_SESSION, session ? session.id : null); }
   function isAdmin(){ return !!session && session.role === 'admin'; }
 
-  /* ── Отрисовка витрины (каруселей) ─────────────────────── */
-  var railOffsets = { releases: 0, pc: 0 };
-  var globalQuery = '';
+  /* ── Отрисовка и управление глобальными уведомлениями ── */
+  function renderNotifications(){
+    var badge = document.getElementById('notifBadge');
+    var listEl = document.getElementById('notifPopList');
+    var unread = notifications.filter(function(n){ return !readNotifIds[n.id]; }).length;
 
-  function buildGameCardHTML(g, resolvedCoverUrl){
-    var imgSrc = resolvedCoverUrl !== undefined ? resolvedCoverUrl : (g.previewUrl || g.image || '');
+    if(unread > 0){
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+
+    listEl.innerHTML = '';
+    if(!notifications.length){
+      listEl.innerHTML = '<div class="empty-note" style="padding:16px">Пока нет уведомлений об обновлениях</div>';
+      return;
+    }
+
+    notifications.slice(0, 20).forEach(function(n){
+      var item = document.createElement('div');
+      item.className = 'notif-item' + (readNotifIds[n.id] ? ' read' : '');
+      var linkedGame = n.gameId ? games.find(function(g){ return g.id === n.gameId; }) : null;
+
+      item.innerHTML =
+        '<div class="notif-item-top">' +
+          '<span class="notif-item-title">' + esc(n.title) + '</span>' +
+          '<span class="notif-item-time">' + esc(formatTime(n.created)) + '</span>' +
+        '</div>' +
+        (n.body ? '<div class="notif-item-body">' + esc(n.body) + '</div>' : '') +
+        '<div class="notif-item-foot">' +
+          (linkedGame
+            ? '<button type="button" class="notif-game-link" data-dl-game="' + esc(linkedGame.id) + '"><svg><use href="#i-download"/></svg>' + esc(linkedGame.title) + '</button>'
+            : '<span></span>') +
+          (isAdmin()
+            ? '<button type="button" class="notif-game-link" style="color:var(--red);background:var(--red-soft)" data-del-notif="' + esc(n.id) + '">Удалить</button>'
+            : '') +
+        '</div>';
+      listEl.appendChild(item);
+    });
+
+    listEl.querySelectorAll('[data-dl-game]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var g = games.find(function(x){ return x.id === btn.dataset.dlGame; });
+        if(g){
+          document.getElementById('notifPopover').classList.remove('open');
+          downloadGameFile(g);
+        }
+      });
+    });
+    listEl.querySelectorAll('[data-del-notif]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var nid = btn.dataset.delNotif;
+        notifications = notifications.filter(function(x){ return x.id !== nid; });
+        removeNotifFromCloud(nid);
+        renderNotifications();
+        toast('Уведомление удалено у всех');
+      });
+    });
+  }
+
+  /* ── Генератор градиентной обложки по умолчанию ──────── */
+  var COVER_GRADIENTS = [
+    'linear-gradient(135deg,#2a2138 0%,#161924 100%)',
+    'linear-gradient(135deg,#1d2d3e 0%,#141822 100%)',
+    'linear-gradient(135deg,#38261a 0%,#171821 100%)',
+    'linear-gradient(135deg,#1b332c 0%,#131820 100%)',
+    'linear-gradient(135deg,#331e2c 0%,#151722 100%)'
+  ];
+  function coverGradient(title){
+    var sum = 0;
+    var s = String(title || 'ArdoUr');
+    for(var i=0;i<s.length;i++) sum += s.charCodeAt(i);
+    return COVER_GRADIENTS[sum % COVER_GRADIENTS.length];
+  }
+
+  /* ── Отрисовка витрины, вкладок и сортировки ─────────── */
+  var railOffsets = { releases: 0, pc: 0 };
+  var railSlideDir = { releases: '', pc: '' };
+  var globalQuery = '';
+  var activeTopTab = 'new';
+  var activeYearFilter = 'all';
+  var activeSort = 'newest';
+  var activeTagFilter = '';
+
+  function parseRatingNum(r){
+    var num = parseFloat(String(r||'').replace(',','.'));
+    return isNaN(num) ? -1 : num;
+  }
+
+  function applyCatalogFilters(list){
+    var res = list.slice();
+
+    if(globalQuery){
+      res = res.filter(function(g){
+        return g.title.toLowerCase().indexOf(globalQuery) >= 0 ||
+               String(g.tag||'').toLowerCase().indexOf(globalQuery) >= 0;
+      });
+    }
+    if(activeTagFilter){
+      var t = activeTagFilter.toLowerCase();
+      res = res.filter(function(g){
+        return String(g.tag||'').toLowerCase().indexOf(t) >= 0 ||
+               String(g.badge||'').toLowerCase().indexOf(t) >= 0 ||
+               g.title.toLowerCase().indexOf(t) >= 0;
+      });
+    }
+    if(activeTopTab === 'updates'){
+      var updatedOnly = res.filter(function(g){
+        return g.isUpdated || /обнов|repack|патч|update/i.test(String(g.badge||'') + ' ' + String(g.fileName||''));
+      });
+      if(updatedOnly.length) res = updatedOnly;
+    }
+    if(activeTopTab === 'goty' && activeYearFilter !== 'all'){
+      res = res.filter(function(g){
+        return String(g.date||'').indexOf(activeYearFilter) >= 0 ||
+               String(g.created||'').indexOf(activeYearFilter) >= 0;
+      });
+    }
+    if(activeSort === 'files'){
+      res = res.filter(function(g){ return !!g.fileName; });
+    }
+
+    if(activeTopTab === 'top' || activeSort === 'rating'){
+      res.sort(function(a,b){ return parseRatingNum(b.rating) - parseRatingNum(a.rating); });
+    } else if(activeSort === 'title'){
+      res.sort(function(a,b){ return String(a.title||'').localeCompare(String(b.title||''), 'ru'); });
+    } else {
+      res.sort(function(a,b){ return String(b.updatedAt||b.created||'').localeCompare(String(a.updatedAt||a.created||'')); });
+    }
+
+    return res;
+  }
+
+  function updateSectionHeaders(){
+    var h1 = document.getElementById('releasesHeading');
+    var s1 = document.getElementById('releasesSub');
+    var h2 = document.getElementById('pcHeading');
+    var s2 = document.getElementById('pcSub');
+
+    if(activeTopTab === 'top'){
+      h1.textContent = 'ТОП 250 — ЛУЧШИЕ НОВИНКИ';
+      s1.textContent = 'Отсортировано по наивысшему рейтингу игроков';
+      h2.textContent = 'ТОП 250 — ПК РЕЛИЗЫ';
+      s2.textContent = 'Лучшие сборки и торрент-раздачи по оценкам';
+    } else if(activeTopTab === 'updates'){
+      h1.textContent = 'СВЕЖИЕ ОБНОВЛЕНИЯ И ПАТЧИ';
+      s1.textContent = 'Недавно обновлённые релизы и свежие версии';
+      h2.textContent = 'ОБНОВЛЁННЫЕ РЕПАКИ И ТОРРЕНТЫ';
+      s2.textContent = 'Актуальные версии игр для ПК';
+    } else if(activeTopTab === 'goty'){
+      var yr = activeYearFilter === 'all' ? 'ВСЕХ ЛЕТ' : activeYearFilter + ' ГОДА';
+      h1.textContent = 'ИГРЫ ГОДА (' + yr + ')';
+      s1.textContent = 'Главные релизы выбранного периода';
+      h2.textContent = 'ЛУЧШЕЕ НА ПК (' + yr + ')';
+      s2.textContent = 'Знаковые ПК-релизы и торрент-издания';
+    } else {
+      h1.textContent = 'ВЫШЕДШИЕ НОВИНКИ';
+      s1.textContent = 'Наиболее популярные релизы';
+      h2.textContent = 'ИГРЫ НА ПК ТОРРЕНТ';
+      s2.textContent = 'Вышедшие новинки и обновления';
+    }
+  }
+
+  function buildGameCardHTML(g, resolvedCoverUrl, rankIndex){
+    var imgSrc = resolvedCoverUrl !== undefined ? resolvedCoverUrl : (g.previewUrl || g.coverDataUrl || g.image || '');
     var bgStyle = imgSrc
       ? 'background-image:url(\'' + esc(imgSrc) + '\'),' + coverGradient(g.title)
       : 'background:' + coverGradient(g.title);
@@ -1133,13 +1768,18 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
       ? '<span class="game-file-tag"><svg><use href="#i-download"/></svg>' + esc(g.fileExt || 'ФАЙЛ') + '</span>'
       : '<span class="game-file-tag empty">Нет файла</span>';
 
+    var rankHtml = typeof rankIndex === 'number'
+      ? '<span class="game-rank">#' + (rankIndex + 1) + '</span>'
+      : '<span></span>';
+
     return (
       '<div class="game-art" style="' + bgStyle + '">' +
+        rankHtml +
         (g.badge ? '<span class="game-badge">' + esc(g.badge) + '</span>' : '') +
       '</div>' +
       '<div class="game-meta">' +
         '<div class="game-title" title="' + esc(g.title) + '">' + esc(g.title) + '</div>' +
-        '<div class="game-date">' + esc(g.date || 'Без даты') + '</div>' +
+        '<div class="game-date">' + esc(g.date || 'Без даты') + (g.tag ? ' · ' + esc(g.tag) : '') + '</div>' +
         '<div class="game-foot">' +
           '<span class="game-rating">' + esc(g.rating || '—') + '</span>' +
           fileBadge +
@@ -1148,85 +1788,98 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     );
   }
 
-  function downloadGameFile(g){
-    if(!g.fileName){
-      toast('Для этой игры файл ещё не загружен');
-      return;
-    }
-    FileStore.get('gamefile_' + g.id).then(function(blob){
-      if(!blob){
-        toast('Файл недоступен в текущем браузере');
-        return;
-      }
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = g.fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
-      toast('Скачивание: ' + g.fileName);
+  /* Лёгкий 3D-наклон карточки при наведении курсора */
+  function attachCard3DTilt(card){
+    card.addEventListener('mousemove',function(e){
+      var rect = card.getBoundingClientRect();
+      var x = (e.clientX - rect.left) / rect.width;
+      var y = (e.clientY - rect.top) / rect.height;
+      var rotY = (x - 0.5) * 9;
+      var rotX = (0.5 - y) * 9;
+      card.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+      card.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      card.style.transform = 'perspective(700px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg) translateY(-4px)';
+    });
+    card.addEventListener('mouseleave',function(){
+      card.style.transform = '';
     });
   }
 
   function renderRails(){
+    updateSectionHeaders();
+
     ['releases','pc'].forEach(function(section){
       var rail = document.getElementById(section === 'releases' ? 'railReleases' : 'railPc');
-      var allItems = games.filter(function(g){
-        var matchSec = g.section === section;
-        var matchSearch = !globalQuery || g.title.toLowerCase().indexOf(globalQuery) >= 0;
-        return matchSec && matchSearch;
-      });
+      var sectionItems = games.filter(function(g){ return g.section === section; });
+      var allItems = applyCatalogFilters(sectionItems);
+
+      rail.classList.remove('slide-next', 'slide-prev');
+      if(railSlideDir[section]){
+        void rail.offsetWidth;
+        rail.classList.add(railSlideDir[section] === 'next' ? 'slide-next' : 'slide-prev');
+        railSlideDir[section] = '';
+      }
 
       rail.innerHTML = '';
       if(!allItems.length){
         for(var i=0;i<5;i++){
           var empty = document.createElement('div');
           empty.className = 'empty-card';
-          empty.innerHTML = '<svg><use href="#i-gamepad"/></svg><span>' + (globalQuery ? 'НЕТ СОВПАДЕНИЙ' : 'ПУСТО') + '</span>';
+          empty.innerHTML = '<svg><use href="#i-gamepad"/></svg><span>' + ((globalQuery || activeTagFilter || activeSort === 'files') ? 'НЕТ СОВПАДЕНИЙ' : 'ПУСТО') + '</span>';
           rail.appendChild(empty);
         }
         return;
       }
 
       var offset = railOffsets[section] % allItems.length;
-      var visible = [];
       var count = Math.min(5, allItems.length);
       for(var j=0;j<count;j++){
-        visible.push(allItems[(offset + j) % allItems.length]);
+        (function(slotIdx){
+          var itemIdx = (offset + slotIdx) % allItems.length;
+          var g = allItems[itemIdx];
+          var card = document.createElement('div');
+          card.className = 'game-card';
+          card.title = g.fileName ? ('Нажмите, чтобы скачать ' + g.fileName) : g.title;
+          card.innerHTML = buildGameCardHTML(g, g.coverDataUrl || '', activeTopTab === 'top' ? itemIdx : undefined);
+          card.addEventListener('click', function(){ downloadGameFile(g); });
+          attachCard3DTilt(card);
+          rail.appendChild(card);
+
+          getCoverUrl(g).then(function(url){
+            if(url && card.isConnected){
+              var artEl = card.querySelector('.game-art');
+              if(artEl) artEl.style.backgroundImage = 'url(\'' + url + '\'),' + coverGradient(g.title);
+            }
+          });
+        })(j);
       }
-
-      visible.forEach(function(g){
-        var card = document.createElement('div');
-        card.className = 'game-card';
-        card.title = g.fileName ? ('Нажмите, чтобы скачать ' + g.fileName) : g.title;
-        card.innerHTML = buildGameCardHTML(g, '');
-        card.addEventListener('click', function(){ downloadGameFile(g); });
-        rail.appendChild(card);
-
-        getCoverUrl(g.id, g.image).then(function(url){
-          if(url && card.isConnected){
-            var artEl = card.querySelector('.game-art');
-            if(artEl) artEl.style.backgroundImage = 'url(\'' + url + '\'),' + coverGradient(g.title);
-          }
-        });
-      });
     });
   }
 
-  /* Навигация каруселей и точек */
+  /* Навигация каруселей и точек с плавной анимацией */
   document.querySelectorAll('.dots').forEach(function(group){
     var total = Number(group.dataset.dots) || 5;
     for(var i=0;i<total;i++){
       var dot = document.createElement('i');
       if(i===0) dot.className = 'on';
+      dot.dataset.dotIdx = String(i);
       group.appendChild(dot);
     }
   });
   document.querySelectorAll('.rail-foot').forEach(function(foot){
     var section = foot.dataset.rail;
     var dots = foot.querySelector('.dots');
+    dots.querySelectorAll('i').forEach(function(dot){
+      dot.addEventListener('click',function(){
+        var idx = Number(dot.dataset.dotIdx) || 0;
+        var current = Array.prototype.slice.call(dots.children).findIndex(function(d){ return d.classList.contains('on'); });
+        dots.querySelectorAll('i').forEach(function(d){ d.classList.remove('on'); });
+        dot.classList.add('on');
+        railSlideDir[section] = idx >= current ? 'next' : 'prev';
+        railOffsets[section] = idx;
+        renderRails();
+      });
+    });
     foot.querySelectorAll('.arrow').forEach(function(arrow){
       arrow.addEventListener('click',function(){
         var dir = Number(arrow.dataset.dir);
@@ -1237,7 +1890,8 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
         items.forEach(function(d){ d.classList.remove('on'); });
         items[next].classList.add('on');
 
-        railOffsets[section] = Math.max(0, railOffsets[section] + dir);
+        railSlideDir[section] = dir > 0 ? 'next' : 'prev';
+        railOffsets[section] = (railOffsets[section] + dir + 1000) % 1000;
         renderRails();
       });
     });
@@ -1245,10 +1899,23 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 
   document.getElementById('globalSearch').addEventListener('input',function(e){
     globalQuery = e.target.value.trim().toLowerCase();
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
     renderRails();
   });
 
-  /* ── Шапка и состояние аккаунта ────────────────────────── */
+  document.getElementById('expectedLink').addEventListener('click',function(e){
+    e.preventDefault();
+    activeTopTab = 'new';
+    document.querySelectorAll('#topTabs .tab').forEach(function(t){
+      t.classList.toggle('active', t.dataset.tab === 'new');
+    });
+    railOffsets.releases = (railOffsets.releases + 1) % 1000;
+    railSlideDir.releases = 'next';
+    renderRails();
+  });
+
+  /* ── Шапка и управление сессией ───────────────────────── */
   function updateHeader(){
     var adminBtn = document.getElementById('adminBtn');
     var accBtn = document.getElementById('accountBtn');
@@ -1257,19 +1924,15 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     if(session){
       var initials = session.name.trim().slice(0,2).toUpperCase() || 'ЮЗ';
       accBtn.classList.add('logged');
-      accBtn.classList.toggle('is-admin', isAdmin());
       accBtn.innerHTML =
-        '<span class="avatar-circle">' + esc(initials) + '</span>' +
-        '<span class="account-name">' + esc(session.name) + '</span>';
-      accBtn.title = session.email + (isAdmin() ? ' (Администратор)' : '');
+        '<span class="avatar-circle ' + (isAdmin() ? 'is-admin' : '') + '">' + esc(initials) + '</span>' +
+        '<span>' + esc(session.name) + '</span>';
     } else {
-      accBtn.classList.remove('logged', 'is-admin');
+      accBtn.classList.remove('logged');
       accBtn.innerHTML = '<svg><use href="#i-user"/></svg><span>Войти</span>';
-      accBtn.title = 'Войти в аккаунт';
     }
   }
 
-  /* ── Модальное окно входа / регистрации / профиля ─────── */
   function openOverlay(id){ document.getElementById(id).classList.add('open'); }
   function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
 
@@ -1306,7 +1969,7 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     } else {
       profileView.classList.add('hidden');
       guestView.classList.remove('hidden');
-      titleEl.textContent = 'Вход в ЗЕНИТ';
+      titleEl.textContent = 'Вход в ArdoUr';
       subEl.textContent = 'Авторизация и регистрация участников';
       switchAuthTab(false);
     }
@@ -1320,16 +1983,40 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
   document.getElementById('authTabLogin').addEventListener('click',function(){ switchAuthTab(false); });
   document.getElementById('authTabReg').addEventListener('click',function(){ switchAuthTab(true); });
 
-  /* Показ / скрытие пароля */
-  document.querySelectorAll('[data-eye]').forEach(function(btn){
+  document.querySelectorAll('[data-toggle-pass]').forEach(function(btn){
     btn.addEventListener('click',function(){
-      var input = document.getElementById(btn.dataset.eye);
-      if(!input) return;
+      var input = document.getElementById(btn.dataset.togglePass);
       input.type = input.type === 'password' ? 'text' : 'password';
     });
   });
 
-  /* Регистрация */
+  function completeSignIn(user){
+    session = user;
+    saveSessionId(user.id);
+    updateHeader();
+    renderNotifications();
+    closeOverlay('authOverlay');
+    toast('Добро пожаловать, ' + user.name);
+  }
+
+  document.getElementById('authPaneLogin').addEventListener('submit',function(e){
+    e.preventDefault();
+    var email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    var pass = document.getElementById('loginPass').value;
+    if(!email || !pass){ toast('Введите почту и пароль'); return; }
+
+    var user = users.find(function(u){ return u.email && u.email.toLowerCase() === email; });
+    if(!user){ toast('Аккаунт с такой почтой не найден'); return; }
+    if(user.pass !== hash(pass)){ toast('Неверный пароль'); return; }
+
+    if(user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin'){
+      user.role = 'admin';
+      syncUserToCloud(user);
+    }
+    document.getElementById('loginPass').value = '';
+    completeSignIn(user);
+  });
+
   document.getElementById('authPaneReg').addEventListener('submit',function(e){
     e.preventDefault();
     var name = document.getElementById('regName').value.trim();
@@ -1337,55 +2024,34 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     var pass = document.getElementById('regPass').value;
 
     if(!name || !email || !pass){ toast('Заполните все поля'); return; }
-    if(email.indexOf('@') < 1){ toast('Укажите корректную почту'); return; }
     if(pass.length < 4){ toast('Пароль должен быть не короче 4 символов'); return; }
-    if(users.some(function(u){ return u.email === email; })){
-      toast('Пользователь с такой почтой уже зарегистрирован');
+    if(users.some(function(u){ return u.email && u.email.toLowerCase() === email; })){
+      toast('Эта почта уже зарегистрирована');
       return;
     }
 
     var user = {
-      id:uid(), name:name, email:email, pass:hash(pass),
+      id: uid(),
+      name: name,
+      email: email,
+      pass: hash(pass),
       role: email === ADMIN_EMAIL ? 'admin' : 'user',
       created: new Date().toISOString()
     };
     users.push(user);
-    write(K_USERS, users);
-    session = user;
-    saveSession();
-    updateHeader();
-    closeOverlay('authOverlay');
-    toast('Аккаунт создан! Добро пожаловать, ' + user.name);
+    syncUserToCloud(user);
+
+    document.getElementById('regName').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPass').value = '';
+    completeSignIn(user);
   });
 
-  /* Вход */
-  document.getElementById('authPaneLogin').addEventListener('submit',function(e){
-    e.preventDefault();
-    var email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    var pass = document.getElementById('loginPass').value;
-
-    if(!email || !pass){ toast('Введите почту и пароль'); return; }
-    var user = users.find(function(u){ return u.email.toLowerCase() === email; });
-    if(!user){ toast('Аккаунт с такой почтой не найден'); return; }
-    if(user.pass !== hash(pass)){ toast('Неверный пароль'); return; }
-
-    if(user.email === ADMIN_EMAIL && user.role !== 'admin'){
-      user.role = 'admin';
-      write(K_USERS, users);
-    }
-
-    session = user;
-    saveSession();
-    updateHeader();
-    closeOverlay('authOverlay');
-    toast('С возвращением, ' + user.name + '!');
-  });
-
-  /* Выход из аккаунта */
   document.getElementById('logoutBtn').addEventListener('click',function(){
     session = null;
-    saveSession();
+    saveSessionId('');
     updateHeader();
+    renderNotifications();
     closeOverlay('authOverlay');
     closeOverlay('adminOverlay');
     toast('Вы вышли из аккаунта');
@@ -1396,14 +2062,10 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     openAdminPanel();
   });
 
-  /* ── Панель администратора ─────────────────────────────── */
+  /* ── Админ-панель и загрузка файлов ──────────────────── */
   var editingGameId = null;
-  var adminGameSectionFilter = 'all';
-  var adminGameQuery = '';
-  var adminUserRoleFilter = 'all';
-  var adminUserQuery = '';
+  var pendingDeleteGameId = null;
 
-  /* Временное состояние загружаемых файлов в форме */
   var pendingCoverBlob = null;
   var pendingCoverPreview = '';
   var pendingCoverRemoved = false;
@@ -1411,6 +2073,13 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
   var pendingGameBlob = null;
   var pendingGameMeta = null;
   var pendingGameRemoved = false;
+
+  function switchAdminTab(tab){
+    document.getElementById('adminPaneGames').classList.toggle('hidden', tab !== 'games');
+    document.getElementById('adminPaneUsers').classList.toggle('hidden', tab !== 'users');
+    document.getElementById('adminTabGames').classList.toggle('active', tab === 'games');
+    document.getElementById('adminTabUsers').classList.toggle('active', tab === 'users');
+  }
 
   function updateAdminStats(){
     document.getElementById('statTotalGames').textContent = games.length;
@@ -1421,120 +2090,67 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
 
   function updateFileDropUI(){
     var coverDrop = document.getElementById('coverDrop');
-    var coverNameEl = document.getElementById('coverFileName');
-    var coverHintEl = document.getElementById('coverFileHint');
-    var clearCoverBtn = document.getElementById('clearCoverBtn');
+    var coverName = document.getElementById('coverFileName');
+    var coverHint = document.getElementById('coverFileHint');
+    var clearCover = document.getElementById('clearCoverBtn');
 
     if(pendingCoverBlob){
       coverDrop.classList.add('has-file');
-      coverNameEl.textContent = pendingCoverBlob.name || 'Обложка выбрана';
-      coverHintEl.textContent = formatBytes(pendingCoverBlob.size);
-      clearCoverBtn.classList.remove('hidden');
-    } else if(pendingCoverPreview){
+      coverName.textContent = pendingCoverBlob.name;
+      coverHint.textContent = formatBytes(pendingCoverBlob.size);
+      clearCover.classList.remove('hidden');
+    } else if(pendingCoverPreview && !pendingCoverRemoved){
       coverDrop.classList.add('has-file');
-      coverNameEl.textContent = 'Текущая обложка сохранена';
-      coverHintEl.textContent = 'Нажмите, чтобы заменить';
-      clearCoverBtn.classList.remove('hidden');
+      coverName.textContent = 'Обложка загружена';
+      coverHint.textContent = 'Нажмите, чтобы заменить';
+      clearCover.classList.remove('hidden');
     } else {
       coverDrop.classList.remove('has-file');
-      coverNameEl.textContent = 'Выбрать изображение...';
-      coverHintEl.textContent = 'PNG, JPG, WEBP';
-      clearCoverBtn.classList.add('hidden');
+      coverName.textContent = 'Выбрать изображение...';
+      coverHint.textContent = 'PNG, JPG, WEBP';
+      clearCover.classList.add('hidden');
     }
 
     var gameDrop = document.getElementById('gameFileDrop');
-    var gameNameEl = document.getElementById('gameFileName');
-    var gameHintEl = document.getElementById('gameFileHint');
-    var clearGameBtn = document.getElementById('clearGameFileBtn');
+    var gameName = document.getElementById('gameFileName');
+    var gameHint = document.getElementById('gameFileHint');
+    var clearGame = document.getElementById('clearGameFileBtn');
 
-    if(pendingGameMeta){
+    if(pendingGameMeta && !pendingGameRemoved){
       gameDrop.classList.add('has-file');
-      gameNameEl.textContent = pendingGameMeta.fileName;
-      gameHintEl.textContent = (pendingGameMeta.fileExt || 'ФАЙЛ') + (pendingGameMeta.fileSize ? ' · ' + formatBytes(pendingGameMeta.fileSize) : '');
-      clearGameBtn.classList.remove('hidden');
+      gameName.textContent = pendingGameMeta.fileName;
+      gameHint.textContent = formatBytes(pendingGameMeta.fileSize) + (pendingGameMeta.fileExt ? ' · ' + pendingGameMeta.fileExt : '');
+      clearGame.classList.remove('hidden');
     } else {
       gameDrop.classList.remove('has-file');
-      gameNameEl.textContent = 'Загрузить .zip или .torrent...';
-      gameHintEl.textContent = 'Архив или торрент-файл';
-      clearGameBtn.classList.add('hidden');
+      gameName.textContent = 'Загрузить .zip или .torrent...';
+      gameHint.textContent = 'Архив или торрент-файл';
+      clearGame.classList.add('hidden');
     }
   }
 
   function updateLivePreview(){
-    var sample = {
+    var draft = {
       title: document.getElementById('gTitle').value.trim() || 'Название игры',
       date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
       rating: document.getElementById('gRating').value.trim() || '8.5',
       badge: document.getElementById('gBadge').value.trim(),
-      previewUrl: pendingCoverPreview,
-      fileName: pendingGameMeta ? pendingGameMeta.fileName : '',
-      fileExt: pendingGameMeta ? pendingGameMeta.fileExt : ''
+      tag: document.getElementById('gTag').value,
+      previewUrl: pendingCoverRemoved ? '' : pendingCoverPreview,
+      fileName: (!pendingGameRemoved && pendingGameMeta) ? pendingGameMeta.fileName : '',
+      fileExt: (!pendingGameRemoved && pendingGameMeta) ? pendingGameMeta.fileExt : ''
     };
-    document.getElementById('livePreviewCard').innerHTML = buildGameCardHTML(sample, pendingCoverPreview);
+    document.getElementById('livePreviewCard').innerHTML = buildGameCardHTML(draft, draft.previewUrl);
   }
-
-  ['gTitle','gDate','gRating','gBadge'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', updateLivePreview);
-  });
-
-  /* Выбор файла обложки */
-  document.getElementById('gImageFile').addEventListener('change',function(e){
-    var file = e.target.files && e.target.files[0];
-    if(!file) return;
-    if(!file.type.startsWith('image/')){
-      toast('Выберите файл изображения (PNG, JPG, WEBP)');
-      e.target.value = '';
-      return;
-    }
-    pendingCoverBlob = file;
-    pendingCoverRemoved = false;
-    pendingCoverPreview = URL.createObjectURL(file);
-    updateFileDropUI();
-    updateLivePreview();
-  });
-
-  document.getElementById('clearCoverBtn').addEventListener('click',function(e){
-    e.stopPropagation();
-    pendingCoverBlob = null;
-    pendingCoverPreview = '';
-    pendingCoverRemoved = true;
-    document.getElementById('gImageFile').value = '';
-    updateFileDropUI();
-    updateLivePreview();
-  });
-
-  /* Выбор файла игры (.zip / .torrent) */
-  document.getElementById('gGameFile').addEventListener('change',function(e){
-    var file = e.target.files && e.target.files[0];
-    if(!file) return;
-    var parts = file.name.split('.');
-    var ext = parts.length > 1 ? parts.pop().toUpperCase() : 'ФАЙЛ';
-    pendingGameBlob = file;
-    pendingGameRemoved = false;
-    pendingGameMeta = {
-      fileName: file.name,
-      fileSize: file.size,
-      fileExt: ext
-    };
-    updateFileDropUI();
-    updateLivePreview();
-  });
-
-  document.getElementById('clearGameFileBtn').addEventListener('click',function(e){
-    e.stopPropagation();
-    pendingGameBlob = null;
-    pendingGameMeta = null;
-    pendingGameRemoved = true;
-    document.getElementById('gGameFile').value = '';
-    updateFileDropUI();
-    updateLivePreview();
-  });
 
   function resetGameForm(){
     editingGameId = null;
-    ['gTitle','gDate','gRating','gBadge'].forEach(function(id){
+    ['gTitle','gDate','gRating','gBadge','notifCustomTitle','notifCustomText'].forEach(function(id){
       document.getElementById(id).value = '';
     });
+    document.getElementById('gTag').value = '';
+    document.getElementById('sendNotifCheck').checked = false;
+    document.getElementById('notifComposeFields').classList.add('hidden');
     document.getElementById('gImageFile').value = '';
     document.getElementById('gGameFile').value = '';
     pendingCoverBlob = null;
@@ -1550,20 +2166,81 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     updateLivePreview();
   }
 
+  document.getElementById('sendNotifCheck').addEventListener('change',function(e){
+    var box = document.getElementById('notifComposeFields');
+    box.classList.toggle('hidden', !e.target.checked);
+    if(e.target.checked && !document.getElementById('notifCustomTitle').value.trim()){
+      var gTitle = document.getElementById('gTitle').value.trim();
+      if(gTitle){
+        document.getElementById('notifCustomTitle').value = editingGameId
+          ? ('Обновление файла: ' + gTitle)
+          : ('Новый релиз: ' + gTitle);
+      }
+    }
+  });
+
+  document.getElementById('gImageFile').addEventListener('change',function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    pendingCoverBlob = file;
+    pendingCoverRemoved = false;
+    var reader = new FileReader();
+    reader.onload = function(){
+      pendingCoverPreview = reader.result || '';
+      updateFileDropUI();
+      updateLivePreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('clearCoverBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    document.getElementById('gImageFile').value = '';
+    pendingCoverBlob = null;
+    pendingCoverPreview = '';
+    pendingCoverRemoved = true;
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  document.getElementById('gGameFile').addEventListener('change',function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var extMatch = file.name.match(/\.([a-z0-9]+)$/i);
+    var ext = extMatch ? extMatch[1].toUpperCase() : 'ФАЙЛ';
+    pendingGameBlob = file;
+    pendingGameRemoved = false;
+    pendingGameMeta = {
+      fileName: file.name,
+      fileSize: file.size,
+      fileExt: ext
+    };
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  document.getElementById('clearGameFileBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    document.getElementById('gGameFile').value = '';
+    pendingGameBlob = null;
+    pendingGameMeta = null;
+    pendingGameRemoved = true;
+    updateFileDropUI();
+    updateLivePreview();
+  });
+
+  ['gTitle','gDate','gRating','gBadge','gTag'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', updateLivePreview);
+    document.getElementById(id).addEventListener('change', updateLivePreview);
+  });
+
   document.getElementById('cancelEditBtn').addEventListener('click', resetGameForm);
 
-  function switchAdminTab(tab){
-    document.getElementById('adminPaneGames').classList.toggle('hidden', tab !== 'games');
-    document.getElementById('adminPaneUsers').classList.toggle('hidden', tab !== 'users');
-    document.getElementById('adminTabGames').classList.toggle('active', tab === 'games');
-    document.getElementById('adminTabUsers').classList.toggle('active', tab === 'users');
-  }
-
   function openAdminPanel(){
-    if(!isAdmin()){ toast('Доступ разрешён только администраторам'); return; }
-    switchAdminTab('games');
+    if(!isAdmin()){ toast('Доступ только для администраторов'); return; }
     resetGameForm();
     updateAdminStats();
+    switchAdminTab('games');
     renderAdminGames();
     renderAdminUsers();
     openOverlay('adminOverlay');
@@ -1573,13 +2250,11 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
   document.getElementById('adminTabGames').addEventListener('click',function(){ switchAdminTab('games'); });
   document.getElementById('adminTabUsers').addEventListener('click',function(){ switchAdminTab('users'); renderAdminUsers(); });
 
-  /* Добавление / сохранение игры */
-  document.getElementById('gameForm').addEventListener('submit',function(e){
+  document.getElementById('gameForm').addEventListener('submit', async function(e){
     e.preventDefault();
-    if(!isAdmin()){ toast('Недостаточно прав'); return; }
-
+    if(!isAdmin()){ toast('Нужны права администратора'); return; }
     var title = document.getElementById('gTitle').value.trim();
-    if(!title){ toast('Укажите название игры'); document.getElementById('gTitle').focus(); return; }
+    if(!title){ toast('Укажите название игры'); return; }
 
     var targetId = editingGameId || uid();
     var existing = editingGameId ? games.find(function(g){ return g.id === editingGameId; }) : null;
@@ -1588,115 +2263,140 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     var fileSize = pendingGameRemoved ? 0 : (pendingGameMeta ? pendingGameMeta.fileSize : (existing ? existing.fileSize : 0));
     var fileExt = pendingGameRemoved ? '' : (pendingGameMeta ? pendingGameMeta.fileExt : (existing ? existing.fileExt : ''));
 
+    var coverDataUrl = pendingCoverRemoved ? '' : (existing ? (existing.coverDataUrl || '') : '');
+    if(pendingCoverBlob){
+      coverDataUrl = await compressImageToDataUrl(pendingCoverBlob);
+    }
+
+    var fileDataUrl = pendingGameRemoved ? '' : (existing ? (existing.fileDataUrl || '') : '');
+    if(pendingGameBlob){
+      if(pendingGameBlob.size <= 780 * 1024){
+        fileDataUrl = await blobToDataUrl(pendingGameBlob);
+      } else {
+        toast('Файл больше 780 КБ сохранён локально (для всех используйте .torrent)');
+      }
+    }
+
+    var nowIso = new Date().toISOString();
     var payload = {
       section: document.getElementById('gSection').value,
       title: title,
       date: document.getElementById('gDate').value.trim() || 'Сегодня',
       rating: document.getElementById('gRating').value.trim() || '—',
       badge: document.getElementById('gBadge').value.trim(),
+      tag: document.getElementById('gTag').value,
+      isUpdated: !!editingGameId,
+      updatedAt: nowIso,
       hasCover: pendingCoverRemoved ? false : (!!pendingCoverBlob || (existing ? !!existing.hasCover : false)),
+      coverDataUrl: coverDataUrl,
       fileName: fileName,
       fileSize: fileSize,
-      fileExt: fileExt
+      fileExt: fileExt,
+      fileDataUrl: fileDataUrl
     };
 
     var tasks = [];
-    if(pendingCoverBlob){
-      if(objectUrlCache[targetId]){
-        URL.revokeObjectURL(objectUrlCache[targetId]);
-        delete objectUrlCache[targetId];
+    if(pendingCoverBlob) tasks.push(putBlob('cover_' + targetId, pendingCoverBlob));
+    else if(pendingCoverRemoved) tasks.push(delBlob('cover_' + targetId));
+
+    if(pendingGameBlob) tasks.push(putBlob('file_' + targetId, pendingGameBlob));
+    else if(pendingGameRemoved) tasks.push(delBlob('file_' + targetId));
+
+    await Promise.all(tasks);
+
+    var savedGame;
+    var wasEditing = !!editingGameId;
+    if(editingGameId){
+      var idx = games.findIndex(function(g){ return g.id === editingGameId; });
+      if(idx >= 0){
+        games[idx] = Object.assign({}, games[idx], payload);
+        savedGame = games[idx];
+        toast('Изменения сохранены и отправлены всем');
       }
-      tasks.push(FileStore.put('cover_' + targetId, pendingCoverBlob));
-    } else if(pendingCoverRemoved){
-      if(objectUrlCache[targetId]){
-        URL.revokeObjectURL(objectUrlCache[targetId]);
-        delete objectUrlCache[targetId];
-      }
-      tasks.push(FileStore.del('cover_' + targetId));
+    } else {
+      savedGame = Object.assign({ id:targetId, created:nowIso }, payload);
+      games.unshift(savedGame);
+      toast('Игра опубликована и видна всем пользователям');
     }
 
-    if(pendingGameBlob){
-      tasks.push(FileStore.put('gamefile_' + targetId, pendingGameBlob));
-    } else if(pendingGameRemoved){
-      tasks.push(FileStore.del('gamefile_' + targetId));
+    if(savedGame) syncGameToCloud(savedGame);
+
+    /* Отправка кастомного уведомления всем пользователям */
+    if(document.getElementById('sendNotifCheck').checked){
+      var customTitle = document.getElementById('notifCustomTitle').value.trim() ||
+        (wasEditing ? ('Обновлено: ' + title) : ('Добавлена игра: ' + title));
+      var customText = document.getElementById('notifCustomText').value.trim() ||
+        (fileName ? ('Доступен файл ' + fileName + ' для скачивания') : 'Карточка уже доступна в каталоге ArdoUr');
+      var notifObj = {
+        id: uid(),
+        title: customTitle,
+        body: customText,
+        gameId: targetId,
+        created: nowIso
+      };
+      notifications.unshift(notifObj);
+      syncNotifToCloud(notifObj);
+      renderNotifications();
     }
 
-    Promise.all(tasks).then(function(){
-      if(editingGameId){
-        var idx = games.findIndex(function(g){ return g.id === editingGameId; });
-        if(idx >= 0){
-          games[idx] = Object.assign({}, games[idx], payload);
-          toast('Изменения сохранены');
-        }
-      } else {
-        games.unshift(Object.assign({ id:targetId, created:new Date().toISOString() }, payload));
-        toast('Игра опубликована в каталоге');
-      }
-
-      write(K_GAMES, games);
-      resetGameForm();
-      updateAdminStats();
-      renderAdminGames();
-      renderRails();
-    });
-  });
-
-  /* Фильтрация списка игр в админке */
-  document.querySelectorAll('#gameSectionFilter .pill-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      document.querySelectorAll('#gameSectionFilter .pill-btn').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      adminGameSectionFilter = btn.dataset.sec;
-      renderAdminGames();
-    });
-  });
-  document.getElementById('adminGameSearch').addEventListener('input',function(e){
-    adminGameQuery = e.target.value.trim().toLowerCase();
+    resetGameForm();
+    updateAdminStats();
     renderAdminGames();
+    renderRails();
   });
 
   function renderAdminGames(){
     var host = document.getElementById('adminGamesList');
+    var q = document.getElementById('adminGameSearch').value.trim().toLowerCase();
+    var sec = document.getElementById('adminSectionFilter').value;
     host.innerHTML = '';
 
     var filtered = games.filter(function(g){
-      var secOk = adminGameSectionFilter === 'all' || g.section === adminGameSectionFilter;
-      var qOk = !adminGameQuery || g.title.toLowerCase().indexOf(adminGameQuery) >= 0;
-      return secOk && qOk;
+      var matchSec = sec === 'all' || g.section === sec;
+      var matchQ = !q || g.title.toLowerCase().indexOf(q) >= 0;
+      return matchSec && matchQ;
     });
 
     if(!filtered.length){
-      host.innerHTML = '<div class="empty-note">В этом разделе пока нет игр</div>';
+      host.innerHTML = '<div class="empty-note">Игры по заданному фильтру не найдены</div>';
       return;
     }
 
     filtered.forEach(function(g){
       var row = document.createElement('div');
       row.className = 'list-row';
-      var secLabel = g.section === 'releases' ? 'Вышедшие новинки' : 'Игры на ПК торрент';
-      var fileInfo = g.fileName ? (' · Файл: ' + g.fileName + (g.fileSize ? ' (' + formatBytes(g.fileSize) + ')' : '')) : ' · Без файла';
+      var isConfirming = pendingDeleteGameId === g.id;
+      var fileBadge = g.fileName
+        ? '<span class="row-file-badge"><svg><use href="#i-file"/></svg>' + esc(g.fileName) + '</span>'
+        : '';
 
       row.innerHTML =
-        '<div class="list-thumb" style="background:' + coverGradient(g.title) + '">' + esc(g.title.slice(0,2).toUpperCase()) + '</div>' +
+        '<div class="row-thumb" id="thumb_' + esc(g.id) + '" style="background:' + coverGradient(g.title) + '">' +
+          ((g.hasCover || g.coverDataUrl) ? '' : '<svg><use href="#i-gamepad"/></svg>') +
+        '</div>' +
         '<div class="grow">' +
           '<div class="name">' + esc(g.title) + '</div>' +
-          '<div class="sub">' + esc(secLabel) + ' · ' + esc(g.date) + ' · Рейтинг: ' + esc(g.rating) + esc(fileInfo) + '</div>' +
+          '<div class="sub">' +
+            '<span>' + (g.section === 'releases' ? 'Новинки' : 'ПК торрент') + ' · ' + esc(g.date) + ' · ★ ' + esc(g.rating) + '</span>' +
+            fileBadge +
+          '</div>' +
         '</div>' +
         '<div class="row-btns">' +
-          '<button type="button" class="btn ghost mini" data-edit="' + esc(g.id) + '" title="Редактировать"><svg><use href="#i-edit"/></svg>Изменить</button>' +
-          '<button type="button" class="btn danger mini" data-del="' + esc(g.id) + '">Удалить</button>' +
+          '<button type="button" class="btn ghost mini" data-edit="' + esc(g.id) + '"><svg><use href="#i-edit"/></svg>Изменить</button>' +
+          '<button type="button" class="btn danger mini" data-del="' + esc(g.id) + '">' + (isConfirming ? 'Подтвердить' : 'Удалить') + '</button>' +
         '</div>';
       host.appendChild(row);
 
-      getCoverUrl(g.id, g.image).then(function(url){
-        if(url && row.isConnected){
-          var thumb = row.querySelector('.list-thumb');
-          if(thumb){
+      if(g.hasCover || g.coverDataUrl){
+        getCoverUrl(g).then(function(url){
+          var thumb = document.getElementById('thumb_' + g.id);
+          if(url && thumb){
             thumb.style.backgroundImage = 'url(\'' + url + '\')';
-            thumb.textContent = '';
+            thumb.style.backgroundSize = 'cover';
+            thumb.style.backgroundPosition = 'center';
           }
-        }
-      });
+        });
+      }
     });
 
     host.querySelectorAll('[data-edit]').forEach(function(btn){
@@ -1709,6 +2409,7 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
         document.getElementById('gDate').value = g.date;
         document.getElementById('gRating').value = g.rating;
         document.getElementById('gBadge').value = g.badge || '';
+        document.getElementById('gTag').value = g.tag || '';
 
         pendingCoverBlob = null;
         pendingCoverRemoved = false;
@@ -1719,7 +2420,7 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
         document.getElementById('publishBtnText').textContent = 'Сохранить изменения';
         document.getElementById('cancelEditBtn').classList.remove('hidden');
 
-        getCoverUrl(g.id, g.image).then(function(url){
+        getCoverUrl(g).then(function(url){
           pendingCoverPreview = url || '';
           updateFileDropUI();
           updateLivePreview();
@@ -1728,139 +2429,149 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
       });
     });
 
-    /* Двухэтапное подтверждение удаления */
     host.querySelectorAll('[data-del]').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        if(!btn.classList.contains('confirming')){
-          btn.classList.add('confirming');
-          btn.textContent = 'Точно?';
+      btn.addEventListener('click', async function(){
+        var id = btn.dataset.del;
+        if(pendingDeleteGameId !== id){
+          pendingDeleteGameId = id;
+          renderAdminGames();
           setTimeout(function(){
-            if(btn.isConnected){
-              btn.classList.remove('confirming');
-              btn.textContent = 'Удалить';
+            if(pendingDeleteGameId === id){
+              pendingDeleteGameId = null;
+              renderAdminGames();
             }
-          }, 2800);
+          }, 3000);
           return;
         }
-        var delId = btn.dataset.del;
-        games = games.filter(function(g){ return g.id !== delId; });
-        if(editingGameId === delId) resetGameForm();
-        if(objectUrlCache[delId]){
-          URL.revokeObjectURL(objectUrlCache[delId]);
-          delete objectUrlCache[delId];
-        }
-        FileStore.del('cover_' + delId);
-        FileStore.del('gamefile_' + delId);
-
-        write(K_GAMES, games);
+        pendingDeleteGameId = null;
+        if(editingGameId === id) resetGameForm();
+        await Promise.all([delBlob('cover_' + id), delBlob('file_' + id)]);
+        games = games.filter(function(g){ return g.id !== id; });
+        removeGameFromCloud(id);
         updateAdminStats();
         renderAdminGames();
         renderRails();
-        toast('Игра удалена из каталога');
+        toast('Игра удалена у всех пользователей');
       });
     });
   }
 
-  /* Управление пользователями в админке */
-  document.querySelectorAll('#userRoleFilter .pill-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      document.querySelectorAll('#userRoleFilter .pill-btn').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      adminUserRoleFilter = btn.dataset.roleFilter;
-      renderAdminUsers();
-    });
-  });
-  document.getElementById('userSearch').addEventListener('input',function(e){
-    adminUserQuery = e.target.value.trim().toLowerCase();
-    renderAdminUsers();
-  });
+  document.getElementById('adminGameSearch').addEventListener('input', renderAdminGames);
+  document.getElementById('adminSectionFilter').addEventListener('change', renderAdminGames);
 
   function renderAdminUsers(){
+    var q = document.getElementById('userSearch').value.trim().toLowerCase();
     var host = document.getElementById('adminUsersList');
     host.innerHTML = '';
 
-    var filtered = users.filter(function(u){
-      var roleOk = adminUserRoleFilter === 'all' || u.role === adminUserRoleFilter;
-      var qOk = !adminUserQuery || u.name.toLowerCase().indexOf(adminUserQuery) >= 0 || u.email.toLowerCase().indexOf(adminUserQuery) >= 0;
-      return roleOk && qOk;
+    var found = users.filter(function(u){
+      return !q || String(u.name||'').toLowerCase().indexOf(q) >= 0 || String(u.email||'').toLowerCase().indexOf(q) >= 0;
     });
 
-    if(!filtered.length){
-      host.innerHTML = '<div class="empty-note">Пользователи не найдены</div>';
+    if(!found.length){
+      host.innerHTML = '<div class="empty-note">Участники не найдены</div>';
       return;
     }
 
-    filtered.forEach(function(u){
+    found.forEach(function(u){
       var row = document.createElement('div');
       row.className = 'list-row';
+      var isOwner = u.email && u.email.toLowerCase() === ADMIN_EMAIL;
       var admin = u.role === 'admin';
-      var isOwner = u.email.toLowerCase() === ADMIN_EMAIL;
 
       row.innerHTML =
-        '<div class="list-thumb">' + esc(u.name.slice(0,2).toUpperCase()) + '</div>' +
         '<div class="grow">' +
-          '<div class="name">' + esc(u.name) + (isOwner ? ' ★' : '') + '</div>' +
+          '<div class="name">' + esc(u.name) + (isOwner ? ' (Владелец)' : '') + '</div>' +
           '<div class="sub">' + esc(u.email) + '</div>' +
         '</div>' +
         '<span class="role ' + (admin ? 'admin' : '') + '">' + (admin ? 'АДМИН' : 'ЮЗЕР') + '</span>' +
-        '<div class="row-btns">' +
-          (isOwner
-            ? '<span class="sub" style="padding:0 6px">Главный админ</span>'
-            : '<button type="button" class="btn ghost mini" data-role="' + esc(u.id) + '">' + (admin ? 'Снять админку' : 'Сделать админом') + '</button>' +
-              '<button type="button" class="btn danger mini" data-del-user="' + esc(u.id) + '">Удалить</button>') +
-        '</div>';
+        (isOwner ? '' : '<button type="button" class="btn ghost mini" data-role="' + esc(u.id) + '">' + (admin ? 'Снять права' : 'Назначить админом') + '</button>');
       host.appendChild(row);
     });
 
     host.querySelectorAll('[data-role]').forEach(function(btn){
       btn.addEventListener('click',function(){
         var u = users.find(function(x){ return x.id === btn.dataset.role; });
-        if(!u || u.email.toLowerCase() === ADMIN_EMAIL) return;
+        if(!u || (u.email && u.email.toLowerCase() === ADMIN_EMAIL)) return;
         u.role = u.role === 'admin' ? 'user' : 'admin';
-        write(K_USERS, users);
+        syncUserToCloud(u);
         renderAdminUsers();
         if(session && session.id === u.id) updateHeader();
-        toast('Права пользователя обновлены');
-      });
-    });
-
-    host.querySelectorAll('[data-del-user]').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        if(!btn.classList.contains('confirming')){
-          btn.classList.add('confirming');
-          btn.textContent = 'Точно?';
-          setTimeout(function(){
-            if(btn.isConnected){
-              btn.classList.remove('confirming');
-              btn.textContent = 'Удалить';
-            }
-          }, 2800);
-          return;
-        }
-        var targetId = btn.dataset.delUser;
-        users = users.filter(function(u){ return u.id !== targetId; });
-        write(K_USERS, users);
-        updateAdminStats();
-        renderAdminUsers();
-        toast('Пользователь удалён');
+        toast('Права участника обновлены');
       });
     });
   }
 
+  document.getElementById('userSearch').addEventListener('input', renderAdminUsers);
+
   /* ── Общие обработчики UI ──────────────────────────────── */
   document.getElementById('themeToggle').addEventListener('click',function(){
-    var isLight = document.body.classList.toggle('light');
-    write(K_THEME, isLight ? 'light' : 'dark');
+    document.body.classList.toggle('light');
   });
 
-  document.getElementById('notifBtn').addEventListener('click',function(){
-    toast('Новых системных уведомлений нет');
+  document.getElementById('notifBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    var pop = document.getElementById('notifPopover');
+    pop.classList.toggle('open');
+    renderNotifications();
+  });
+
+  document.getElementById('markAllReadBtn').addEventListener('click',function(){
+    notifications.forEach(function(n){ readNotifIds[n.id] = true; });
+    renderNotifications();
+  });
+
+  document.addEventListener('click',function(e){
+    var wrap = document.querySelector('.notif-wrap');
+    if(wrap && !wrap.contains(e.target)){
+      document.getElementById('notifPopover').classList.remove('open');
+    }
+    var yGroup = document.getElementById('yearTabGroup');
+    if(yGroup && !yGroup.contains(e.target)){
+      yGroup.classList.remove('open');
+    }
+  });
+
+  function setTagFilter(tag){
+    activeTagFilter = activeTagFilter === tag ? '' : tag;
+    var chip = document.getElementById('clearTagFilterBtn');
+    if(activeTagFilter){
+      document.getElementById('activeTagLabel').textContent = activeTagFilter;
+      chip.classList.remove('hidden');
+    } else {
+      chip.classList.add('hidden');
+    }
+    document.querySelectorAll('#sideNavList li, #sideGenreGrid div').forEach(function(el){
+      el.classList.toggle('active', el.dataset.tag === activeTagFilter);
+    });
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
+    renderRails();
+  }
+
+  document.getElementById('clearTagFilterBtn').addEventListener('click',function(){
+    setTagFilter('');
+  });
+
+  document.querySelectorAll('#sideNavList li, #sideGenreGrid div').forEach(function(el){
+    el.addEventListener('click',function(){
+      setTagFilter(el.dataset.tag || '');
+    });
   });
 
   document.getElementById('brandHome').addEventListener('click',function(){
     document.getElementById('globalSearch').value = '';
     globalQuery = '';
-    renderRails();
+    activeTopTab = 'new';
+    activeYearFilter = 'all';
+    activeSort = 'newest';
+    document.getElementById('sortSelect').value = 'newest';
+    document.getElementById('gotyLabel').textContent = 'ИГРЫ ГОДА';
+    document.querySelectorAll('#topTabs .tab').forEach(function(t){
+      t.classList.toggle('active', t.dataset.tab === 'new');
+    });
+    if(activeTagFilter) setTagFilter('');
+    else renderRails();
   });
 
   document.querySelectorAll('[data-close]').forEach(function(b){
@@ -1870,17 +2581,50 @@ body.light .badge-dot{box-shadow:0 0 0 2px #ffffff}
     o.addEventListener('click',function(e){ if(e.target === o) closeOverlay(o.id); });
   });
 
-  document.querySelectorAll('.tabs .tab').forEach(function(tab){
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.tabs .tab').forEach(function(t){ t.classList.remove('active'); });
+  /* Рабочие верхние вкладки + выбор года в «ИГРЫ ГОДА» */
+  document.querySelectorAll('#topTabs .tab').forEach(function(tab){
+    tab.addEventListener('click',function(e){
+      var mode = tab.dataset.tab;
+      if(mode === 'goty'){
+        e.stopPropagation();
+        document.getElementById('yearTabGroup').classList.toggle('open');
+      } else {
+        document.getElementById('yearTabGroup').classList.remove('open');
+      }
+      document.querySelectorAll('#topTabs .tab').forEach(function(t){ t.classList.remove('active'); });
       tab.classList.add('active');
+      activeTopTab = mode;
+      railOffsets.releases = 0;
+      railOffsets.pc = 0;
+      renderRails();
     });
+  });
+
+  document.querySelectorAll('#yearMenu button').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      document.querySelectorAll('#yearMenu button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeYearFilter = btn.dataset.year;
+      document.getElementById('gotyLabel').textContent = activeYearFilter === 'all' ? 'ИГРЫ ГОДА' : ('ИГРЫ ' + activeYearFilter);
+      document.getElementById('yearTabGroup').classList.remove('open');
+      renderRails();
+    });
+  });
+
+  document.getElementById('sortSelect').addEventListener('change',function(e){
+    activeSort = e.target.value;
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
+    renderRails();
   });
 
   /* Инициализация */
   renderRails();
+  renderNotifications();
   updateHeader();
   updateLivePreview();
+  initFirebase();
 })();
 </script>
 </body>
