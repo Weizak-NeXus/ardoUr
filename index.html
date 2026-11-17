@@ -575,6 +575,7 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 }
 .btn:hover{filter:brightness(1.07)}
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.65;cursor:wait}
 .btn.full{width:100%}
 .btn.ghost{
   background:var(--panel-2);border:1px solid var(--line-hover);color:var(--text);
@@ -586,18 +587,11 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;
 .row-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 
 /* Карточка профиля авторизованного пользователя */
-.profile-card{
-  display:flex;align-items:center;gap:14px;padding:15px;
-  background:var(--panel-2);border:1px solid var(--line);
-  border-left:3px solid var(--accent);
-  border-radius:var(--r-lg);margin-bottom:16px;
-}
 .profile-avatar{
   width:46px;height:46px;border-radius:var(--r-md);background:var(--accent-grad);
   color:#0c0e13;font-size:16px;font-weight:900;display:flex;align-items:center;
   justify-content:center;flex:none;
 }
-.profile-card.is-admin .profile-avatar{background:linear-gradient(135deg,#3ddc84,#00bfa5)}
 .profile-info{flex:1;min-width:0}
 .profile-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
 .profile-email{font-size:12px;color:var(--muted);margin-top:3px}
@@ -1401,7 +1395,7 @@ body.light .auth-error{color:#c92a2a}
                 <div class="file-drop-icon"><svg><use href="#i-upload"/></svg></div>
                 <div class="file-drop-info">
                   <div class="file-drop-name" id="gameFileName">Загрузить .zip или .torrent...</div>
-                  <div class="file-drop-hint" id="gameFileHint">До 650 КБ в базу или в Storage</div>
+                  <div class="file-drop-hint" id="gameFileHint">До 620 КБ в базу или в Storage</div>
                 </div>
                 <button type="button" class="file-clear hidden" id="clearGameFileBtn" title="Убрать файл">
                   <svg><use href="#i-close"/></svg>
@@ -1475,38 +1469,13 @@ body.light .auth-error{color:#c92a2a}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 (function(){
   'use strict';
 
-  /* Перехват фоновой ошибки динамической конфигурации Firebase Analytics в изолированных средах */
-  window.addEventListener('unhandledrejection', function(event){
-    var reason = event && event.reason;
-    var msg = reason && (reason.code || reason.message || String(reason));
-    if(msg && String(msg).indexOf('analytics/config-fetch-failed') >= 0){
-      event.preventDefault();
-    }
-  });
-
   var ADMIN_EMAIL = 'vovsenktzena@gmail.com';
-  var DEFAULT_FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBnrhKfKmwC78oY4Q3rovPFw5dr7EU3_T0",
-    authDomain: "ardour-e38a3.firebaseapp.com",
-    projectId: "ardour-e38a3",
-    storageBucket: "ardour-e38a3.firebasestorage.app",
-    messagingSenderId: "382282590819",
-    appId: "1:382282590819:web:c339ad86015a5bd4342656",
-    measurementId: "G-BGP9Q8R1B7"
-  };
-
-  var FIREBASE_CONFIG = (typeof __firebase_config !== 'undefined' && __firebase_config)
-    ? JSON.parse(__firebase_config)
-    : DEFAULT_FIREBASE_CONFIG;
-
-  var APP_ID = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'ardour-e38a3';
-
   var FIRESTORE_RULES_SNIPPET =
     "rules_version = '2';\n" +
     "service cloud.firestore {\n" +
@@ -1517,16 +1486,36 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     "  }\n" +
     "}";
 
+  var DEFAULT_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBnrhKfKmwC78oY4Q3rovPFw5dr7EU3_T0",
+    authDomain: "ardour-e38a3.firebaseapp.com",
+    projectId: "ardour-e38a3",
+    storageBucket: "ardour-e38a3.firebasestorage.app",
+    messagingSenderId: "382282590819",
+    appId: "1:382282590819:web:c339ad86015a5bd4342656",
+    measurementId: "G-BGP9Q8R1B7"
+  };
+
+  var firebaseConfig = DEFAULT_FIREBASE_CONFIG;
+  var isInjectedEnv = false;
+  try{
+    if(typeof __firebase_config !== 'undefined' && __firebase_config){
+      firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+      isInjectedEnv = true;
+    }
+  }catch(e){}
+
+  var appId = (typeof __app_id !== 'undefined' && __app_id) ? String(__app_id) : 'ardour-e38a3';
   var db = null;
   var storage = null;
   var fbAuth = null;
   var fbUser = null;
+  var initPromise = null;
   var cloudWriteError = '';
 
   function uid(){
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   }
-
   function hashPass(s){
     var h = 5381;
     for(var i = 0; i < s.length; i++){
@@ -1534,70 +1523,64 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     }
     return (h >>> 0).toString(36);
   }
-
   function esc(s){
     return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-
   function formatBytes(bytes){
     if(!bytes) return '';
     if(bytes < 1024) return bytes + ' Б';
     if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
     return (bytes / (1024 * 1024)).toFixed(2) + ' МБ';
   }
-
-  function formatTime(iso){
-    if(!iso) return 'недавно';
+  function formatTimeAgo(iso){
+    if(!iso) return 'только что';
+    var diff = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+    if(diff < 60) return 'только что';
+    if(diff < 3600) return Math.floor(diff / 60) + ' мин. назад';
+    if(diff < 86400) return Math.floor(diff / 3600) + ' ч. назад';
+    return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+  }
+  function formatJoinDate(iso){
+    if(!iso) return 'Сегодня';
     try{
-      var d = new Date(iso);
-      return d.toLocaleDateString('ru-RU', { day:'numeric', month:'short' }) + ', ' +
-             d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+      return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
     }catch(e){
-      return 'недавно';
+      return 'Сегодня';
     }
   }
 
-  /* Строгие пути Firestore: artifacts/{appId}/public/data/{collectionName} */
-  function getColRef(name){
-    if(!db) return null;
-    return collection(db, 'artifacts', APP_ID, 'public', 'data', name);
+  /* Вспомогательные функции работы с путями Firestore */
+  function getColRef(colName){
+    return collection(db, 'artifacts', appId, 'public', 'data', colName);
+  }
+  function getDocRef(colName, docId){
+    return doc(db, 'artifacts', appId, 'public', 'data', colName, String(docId));
   }
 
-  function getDocRef(name, id){
-    if(!db) return null;
-    return doc(db, 'artifacts', APP_ID, 'public', 'data', name, id);
-  }
-
-  /* ── Состояние приложения в памяти ────────────────── */
+  /* Состояние приложения */
   var users = [];
   var games = [];
   var notifications = [];
   var readNotifIds = [];
   var dismissedBannerId = '';
 
-  var activeTab = 'new';
-  var selectedYear = 'all';
-  var expectedOnly = false;
-  var activeTag = '';
-  var searchQuery = '';
-  var sortBy = 'newest';
-  var railPages = { releases: 0, pc: 0 };
-
-  /* Состояние редактора в админ-панели */
-  var editingGameId = null;
-  var draftCoverData = '';
-  var draftFileData = '';
-  var draftFileUrl = '';
-  var draftRawFile = null;
-  var draftFileName = '';
-  var draftFileSize = 0;
+  /* Резервный ключ ID профиля в браузере (для гарантированного восстановления при перезаходе) */
+  function getLocalFallbackUid(){
+    try{ return localStorage.getItem('ardour_saved_uid') || ''; }catch(e){ return ''; }
+  }
+  function setLocalFallbackUid(id){
+    try{
+      if(id) localStorage.setItem('ardour_saved_uid', id);
+      else localStorage.removeItem('ardour_saved_uid');
+    }catch(e){}
+  }
 
   function ensureAdminUser(){
-    var found = users.find(function(u){ return (u.email || '').toLowerCase() === ADMIN_EMAIL; });
-    if(!found){
-      found = {
+    var admin = users.find(function(u){ return (u.email || '').toLowerCase() === ADMIN_EMAIL; });
+    if(!admin){
+      admin = {
         id: 'admin_root',
         name: 'Администратор',
         email: ADMIN_EMAIL,
@@ -1605,389 +1588,499 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
         role: 'admin',
         created: new Date().toISOString()
       };
-      users.unshift(found);
-    } else if(found.role !== 'admin'){
-      found.role = 'admin';
+      users.unshift(admin);
+    } else if(admin.role !== 'admin'){
+      admin.role = 'admin';
     }
   }
   ensureAdminUser();
 
   var session = null;
+  var lastSessionUserId = getLocalFallbackUid();
   function isAdmin(){ return !!session && session.role === 'admin'; }
+
+  /* Сохранение текущей сессии профиля в облаке Firebase + локальный ключ */
+  async function persistSessionState(){
+    setLocalFallbackUid(session ? session.id : '');
+    if(!db || !fbUser) return;
+    try{
+      await setDoc(getDocRef('ardour_sessions', fbUser.uid), {
+        userId: session ? session.id : '',
+        email: session ? session.email : '',
+        readNotifIds: readNotifIds,
+        updatedAt: new Date().toISOString()
+      });
+    }catch(e){
+      console.warn('Session persist warning:', e);
+    }
+  }
+
+  /* Принудительная загрузка списка пользователей из Firestore */
+  async function refreshUsersFromCloud(){
+    if(!db || !fbUser) return;
+    try{
+      var snap = await getDocs(getColRef('ardour_users'));
+      var cloudUsers = [];
+      snap.forEach(function(d){ cloudUsers.push(d.data()); });
+      if(cloudUsers.length){
+        users = cloudUsers;
+      }
+      ensureAdminUser();
+    }catch(e){
+      console.warn('Users fetch warning:', e);
+    }
+  }
 
   function toast(msg){
     var el = document.getElementById('toast');
-    if(!el) return;
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toast._t);
-    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 3200);
+    toast._t = setTimeout(function(){ el.classList.remove('show'); }, 2600);
   }
 
-  function updateDiagBanner(){
-    var banner = document.getElementById('fbDiagBanner');
-    var titleEl = document.getElementById('fbDiagTitle');
-    var textEl = document.getElementById('fbDiagText');
-    var copyBtn = document.getElementById('copyRulesBtn');
-    if(!banner) return;
+  /* Управляемые оверлеи */
+  function openOverlay(id){ document.getElementById(id).classList.add('open'); }
+  function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
 
-    if(cloudWriteError){
-      banner.classList.remove('hidden', 'ok');
-      titleEl.textContent = 'Требуется настройка доступа в Firebase (ardour-e38a3)';
-      textEl.textContent = cloudWriteError;
-      copyBtn.classList.remove('hidden');
-    } else if(fbUser){
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click', function(){ closeOverlay(btn.dataset.close); });
+  });
+  document.querySelectorAll('.overlay').forEach(function(ov){
+    ov.addEventListener('click', function(e){
+      if(e.target === ov) closeOverlay(ov.id);
+    });
+  });
+
+  /* Тема оформления (тёмная / светлая) */
+  try{
+    if(localStorage.getItem('ardour_theme') === 'light'){
+      document.body.classList.add('light');
+    }
+  }catch(e){}
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    document.body.classList.toggle('light');
+    try{
+      localStorage.setItem('ardour_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }catch(e){}
+  });
+
+  /* ── Скачивание файла игры ─────────────────────────── */
+  function triggerGameDownload(game){
+    if(!game) return;
+    if(game.fileUrl){
+      window.open(game.fileUrl, '_blank', 'noopener');
+      toast('Открытие ссылки на скачивание: ' + game.title);
+      return;
+    }
+    if(!game.fileData){
+      toast('Файл для этой игры ещё не прикреплён');
+      return;
+    }
+    try{
+      var link = document.createElement('a');
+      link.href = game.fileData;
+      link.download = game.fileName || (game.title + '.zip');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast('Скачивание: ' + (game.fileName || game.title));
+    }catch(err){
+      toast('Не удалось начать скачивание');
+    }
+  }
+
+  /* ── Уведомления для всех пользователей ───────────── */
+  function renderNotifications(){
+    var unread = notifications.filter(function(n){ return readNotifIds.indexOf(n.id) < 0; });
+    var badge = document.getElementById('notifBadge');
+    if(unread.length > 0){
+      badge.textContent = unread.length > 9 ? '9+' : String(unread.length);
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+
+    var list = document.getElementById('notifPopList');
+    list.innerHTML = '';
+    if(!notifications.length){
+      list.innerHTML = '<div class="empty-note">Новых уведомлений пока нет</div>';
+    } else {
+      notifications.slice(0, 15).forEach(function(n){
+        var isRead = readNotifIds.indexOf(n.id) >= 0;
+        var item = document.createElement('div');
+        item.className = 'notif-item' + (isRead ? ' read' : '');
+        var linkedGame = n.gameId ? games.find(function(g){ return g.id === n.gameId; }) : null;
+        var hasDl = linkedGame && (linkedGame.fileData || linkedGame.fileUrl);
+        item.innerHTML =
+          '<div class="notif-item-top">' +
+            '<span class="notif-item-title">' + esc(n.title || 'Обновление ArdoUr') + '</span>' +
+            '<span class="notif-item-time">' + esc(formatTimeAgo(n.created)) + '</span>' +
+          '</div>' +
+          '<div class="notif-item-body">' + esc(n.message || '') + '</div>' +
+          (hasDl ? (
+            '<div class="notif-item-foot">' +
+              '<button type="button" class="notif-game-link" data-notif-dl="' + esc(linkedGame.id) + '">' +
+                '<svg><use href="#i-download"/></svg>Скачать ' + esc(linkedGame.title) +
+              '</button>' +
+            '</div>'
+          ) : '');
+        list.appendChild(item);
+      });
+
+      list.querySelectorAll('[data-notif-dl]').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          var g = games.find(function(x){ return x.id === btn.dataset.notifDl; });
+          if(g) triggerGameDownload(g);
+        });
+      });
+    }
+
+    /* Плашка последнего непрочитанного уведомления на главной */
+    var banner = document.getElementById('liveGlobalBanner');
+    var latestUnread = unread[0];
+    if(latestUnread && latestUnread.id !== dismissedBannerId){
+      banner.dataset.notifId = latestUnread.id;
+      document.getElementById('liveBannerTitle').textContent = latestUnread.title || 'Обновление каталога';
+      document.getElementById('liveBannerBody').textContent = latestUnread.message || '';
+      var dlBtn = document.getElementById('liveBannerDownloadBtn');
+      var linked = latestUnread.gameId ? games.find(function(g){ return g.id === latestUnread.gameId; }) : null;
+      if(linked && (linked.fileData || linked.fileUrl)){
+        dlBtn.classList.remove('hidden');
+        dlBtn.onclick = function(){ triggerGameDownload(linked); };
+      } else {
+        dlBtn.classList.add('hidden');
+      }
       banner.classList.remove('hidden');
-      banner.classList.add('ok');
-      titleEl.textContent = 'Облако Firebase (ardour-e38a3) подключено';
-      textEl.textContent = 'Все опубликованные игры, файлы и уведомления мгновенно обновляются у всех пользователей.';
-      copyBtn.classList.add('hidden');
     } else {
       banner.classList.add('hidden');
     }
   }
 
-  document.getElementById('copyRulesBtn').addEventListener('click', function(){
-    var ta = document.createElement('textarea');
-    ta.value = FIRESTORE_RULES_SNIPPET;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try{
-      document.execCommand('copy');
-      toast('Правила Firestore скопированы! Вставьте их в Firebase Console → Firestore → Rules');
-    }catch(e){
-      toast('Не удалось скопировать правила');
+  document.getElementById('closeLiveBannerBtn').addEventListener('click', function(){
+    var banner = document.getElementById('liveGlobalBanner');
+    var nid = banner.dataset.notifId;
+    if(nid){
+      dismissedBannerId = nid;
+      if(readNotifIds.indexOf(nid) < 0) readNotifIds.push(nid);
     }
-    document.body.removeChild(ta);
+    banner.classList.add('hidden');
+    renderNotifications();
+    persistSessionState();
   });
 
-  /* ── Облачная запись в Firestore с проверкой ошибок ─ */
-  async function syncDoc(colName, id, payload){
-    if(!db || !fbUser){
-      cloudWriteError = 'Нет активной сессии Firebase. Включите Anonymous Sign-in в разделе Authentication проекта ardour-e38a3.';
-      updateDiagBanner();
-      return false;
+  document.getElementById('notifBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    document.getElementById('notifPopover').classList.toggle('open');
+  });
+
+  document.getElementById('markAllReadBtn').addEventListener('click', function(){
+    readNotifIds = notifications.map(function(n){ return n.id; });
+    renderNotifications();
+    persistSessionState();
+  });
+
+  document.addEventListener('click', function(e){
+    var pop = document.getElementById('notifPopover');
+    if(pop.classList.contains('open') && !e.target.closest('.notif-wrap')){
+      pop.classList.remove('open');
     }
-    try{
-      await setDoc(getDocRef(colName, id), payload);
-      cloudWriteError = '';
-      updateDiagBanner();
-      return true;
-    }catch(err){
-      var code = (err && err.code) ? err.code : String(err);
-      if(code.indexOf('permission-denied') >= 0){
-        cloudWriteError = 'Firestore отклонил запись (permission-denied). Откройте Firebase Console → Firestore Database → Rules и разрешите чтение/запись для авторизованных пользователей.';
-      } else {
-        cloudWriteError = 'Ошибка записи в облако: ' + code;
-      }
-      updateDiagBanner();
-      toast('Ошибка сохранения в Firebase: ' + code);
-      return false;
+    var yg = document.getElementById('yearTabGroup');
+    if(yg.classList.contains('open') && !e.target.closest('#yearTabGroup')){
+      yg.classList.remove('open');
     }
+  });
+
+  /* ── Каталог, вкладки, сортировка, поиск и 3D-карточки ── */
+  var activeTab = 'new';
+  var activeYear = 'all';
+  var activeSort = 'newest';
+  var activeTag = '';
+  var searchQuery = '';
+  var expectedOnly = false;
+  var railOffsets = { releases: 0, pc: 0 };
+  var PAGE_SIZE = 5;
+
+  function fallbackCoverStyle(title){
+    var palettes = [
+      'linear-gradient(135deg,#2b1e10,#5c3812)',
+      'linear-gradient(135deg,#182232,#283c5c)',
+      'linear-gradient(135deg,#1d261f,#2f4d36)',
+      'linear-gradient(135deg,#2a1b2e,#4a2854)',
+      'linear-gradient(135deg,#1f232d,#384152)'
+    ];
+    var idx = Math.abs(String(title || '').split('').reduce(function(a,c){ return a + c.charCodeAt(0); }, 0)) % palettes.length;
+    return 'background-image:' + palettes[idx];
   }
 
-  async function removeDoc(colName, id){
-    if(!db || !fbUser) return false;
-    try{
-      await deleteDoc(getDocRef(colName, id));
-      return true;
-    }catch(err){
-      toast('Ошибка удаления из облака: ' + (err && err.code ? err.code : err));
-      return false;
-    }
-  }
-
-  /* ── Скачивание файла игры ────────────────────────── */
-  function hasDownloadableFile(game){
-    return !!(game && (game.fileData || game.fileUrl));
-  }
-
-  function downloadGameFile(game){
-    if(!hasDownloadableFile(game)){
-      toast('Для этой игры пока не прикреплён файл для скачивания');
-      return;
-    }
-    try{
-      var a = document.createElement('a');
-      a.href = game.fileData || game.fileUrl;
-      if(game.fileUrl && !game.fileData){
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-      }
-      a.download = game.fileName || (game.title + '.torrent');
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      toast('Загрузка: ' + (game.fileName || game.title));
-    }catch(e){
-      toast('Не удалось начать скачивание файла');
-    }
-  }
-
-  /* ── Фильтрация и сортировка каталога ─────────────── */
-  function parseRatingNum(r){
-    var n = parseFloat(String(r || '').replace(',', '.'));
-    return isNaN(n) ? -1 : n;
-  }
-
-  function getFilteredGames(section){
+  function filterAndSortGames(section){
     var list = games.filter(function(g){ return g.section === section; });
-
-    if(activeTab === 'updates'){
-      var upd = list.filter(function(g){
-        return g.updated || /обнов/i.test(g.badge || '');
-      });
-      if(upd.length) list = upd;
-    } else if(activeTab === 'goty' && selectedYear !== 'all'){
-      list = list.filter(function(g){
-        return String(g.date || '').indexOf(selectedYear) >= 0 ||
-               String(g.created || '').indexOf(selectedYear) >= 0;
-      });
-    }
-
-    if(expectedOnly && section === 'releases'){
-      var exp = list.filter(function(g){
-        return /ожида|скоро|анонс/i.test((g.badge || '') + ' ' + (g.date || ''));
-      });
-      if(exp.length) list = exp;
-    }
-
-    if(activeTag){
-      var tLow = activeTag.toLowerCase();
-      list = list.filter(function(g){
-        return (g.tag || '').toLowerCase() === tLow ||
-               (g.title || '').toLowerCase().indexOf(tLow) >= 0 ||
-               (g.badge || '').toLowerCase().indexOf(tLow) >= 0;
-      });
-    }
 
     if(searchQuery){
       var q = searchQuery.toLowerCase();
       list = list.filter(function(g){
         return (g.title || '').toLowerCase().indexOf(q) >= 0 ||
                (g.tag || '').toLowerCase().indexOf(q) >= 0 ||
-               (g.badge || '').toLowerCase().indexOf(q) >= 0;
+               (g.badge || '').toLowerCase().indexOf(q) >= 0 ||
+               (g.date || '').toLowerCase().indexOf(q) >= 0;
       });
     }
 
-    if(sortBy === 'files'){
-      list = list.filter(hasDownloadableFile);
+    if(activeTag){
+      list = list.filter(function(g){
+        return (g.tag || '').toLowerCase() === activeTag.toLowerCase();
+      });
     }
 
-    var effectiveSort = (activeTab === 'top' && sortBy === 'newest') ? 'rating' : sortBy;
+    if(section === 'releases' && expectedOnly){
+      list = list.filter(function(g){
+        var b = (g.badge || '').toLowerCase();
+        return b.indexOf('ожид') >= 0 || b.indexOf('скоро') >= 0 || b.indexOf('анонс') >= 0;
+      });
+    }
 
-    list.sort(function(a, b){
-      if(effectiveSort === 'rating'){
-        return parseRatingNum(b.rating) - parseRatingNum(a.rating);
-      }
-      if(effectiveSort === 'title'){
+    if(activeTab === 'updates'){
+      var upd = list.filter(function(g){
+        var b = (g.badge || '').toLowerCase();
+        return b.indexOf('обнов') >= 0 || b.indexOf('патч') >= 0 || b.indexOf('v') === 0 || !!g.updatedAt;
+      });
+      if(upd.length) list = upd;
+    } else if(activeTab === 'goty' && activeYear !== 'all'){
+      list = list.filter(function(g){
+        return (g.date || '').indexOf(activeYear) >= 0 || (g.created || '').indexOf(activeYear) >= 0;
+      });
+    }
+
+    var sorted = list.slice();
+    if(activeSort === 'files'){
+      sorted = sorted.filter(function(g){ return !!(g.fileData || g.fileUrl); });
+    }
+
+    if(activeTab === 'top' || activeSort === 'rating'){
+      sorted.sort(function(a, b){
+        var ra = parseFloat(String(a.rating || '0').replace(',', '.')) || 0;
+        var rb = parseFloat(String(b.rating || '0').replace(',', '.')) || 0;
+        return rb - ra;
+      });
+    } else if(activeSort === 'title'){
+      sorted.sort(function(a, b){
         return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
-      }
-      var ta = new Date(a.updatedAt || a.created || 0).getTime();
-      var tb = new Date(b.updatedAt || b.created || 0).getTime();
-      return tb - ta;
-    });
+      });
+    } else {
+      sorted.sort(function(a, b){
+        return String(b.created || '').localeCompare(String(a.created || ''));
+      });
+    }
 
-    return list;
+    return sorted;
   }
 
-  /* ── 3D-эффект карточек ───────────────────────────── */
   function attach3DTilt(card){
     card.addEventListener('mousemove', function(e){
       var rect = card.getBoundingClientRect();
-      var x = e.clientX - rect.left;
-      var y = e.clientY - rect.top;
-      var rx = ((y / rect.height) - 0.5) * -9;
-      var ry = ((x / rect.width) - 0.5) * 9;
-      card.style.setProperty('--mx', ((x / rect.width) * 100).toFixed(1) + '%');
-      card.style.setProperty('--my', ((y / rect.height) * 100).toFixed(1) + '%');
-      card.style.transform = 'perspective(850px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg) translateY(-3px)';
+      var x = (e.clientX - rect.left) / rect.width;
+      var y = (e.clientY - rect.top) / rect.height;
+      var rotY = (x - 0.5) * 10;
+      var rotX = (0.5 - y) * 10;
+      card.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+      card.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      card.style.transform = 'perspective(900px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg) translateY(-4px)';
     });
     card.addEventListener('mouseleave', function(){
       card.style.transform = '';
     });
   }
 
-  function buildGameCardElement(g, rankIndex){
-    var card = document.createElement('div');
-    card.className = 'game-card';
-
-    var bgStyle = g.image
-      ? ' style="background-image:url(\'' + esc(g.image) + '\')"'
-      : ' style="background:linear-gradient(135deg,#1e2433 0%,#141822 100%)"';
-
-    var leftBadge = (activeTab === 'top' && typeof rankIndex === 'number')
-      ? '<span class="game-rank">#' + (rankIndex + 1) + '</span>'
-      : '<span></span>';
-
-    var rightBadge = g.badge
-      ? '<span class="game-badge">' + esc(g.badge) + '</span>'
-      : '';
-
-    var ext = (g.fileName || '').split('.').pop().toUpperCase();
-    var fileTag = hasDownloadableFile(g)
-      ? '<button type="button" class="card-dl-btn" title="Скачать ' + esc(g.fileName || 'файл') + '"><svg><use href="#i-download"/></svg>' + esc(ext && ext.length <= 7 ? ext : 'СКАЧАТЬ') + '</button>'
-      : '<span class="game-file-tag empty">' + esc(g.tag || 'Каталог') + '</span>';
-
-    card.innerHTML =
-      '<div class="game-art"' + bgStyle + '>' + leftBadge + rightBadge + '</div>' +
+  function buildCardHtml(g, rankNum){
+    var artStyle = g.image ? ('background-image:url(' + esc(g.image) + ')') : fallbackCoverStyle(g.title);
+    var hasFile = !!(g.fileData || g.fileUrl);
+    var fileLabel = g.fileName ? esc(g.fileName) : (g.fileUrl ? 'Ссылка' : '');
+    return (
+      '<div class="game-art" style="' + artStyle + '">' +
+        (rankNum ? '<span class="game-rank">#' + rankNum + '</span>' : '<span></span>') +
+        (g.badge ? '<span class="game-badge">' + esc(g.badge) + '</span>' : '') +
+      '</div>' +
       '<div class="game-meta">' +
         '<div class="game-title" title="' + esc(g.title) + '">' + esc(g.title) + '</div>' +
-        '<div class="game-date">' + esc(g.date || 'Дата не указана') + '</div>' +
+        '<div class="game-date">' + esc(g.date || 'Скоро') + (g.tag ? ' · ' + esc(g.tag) : '') + '</div>' +
         '<div class="game-foot">' +
-          '<span class="game-rating">' + (g.rating ? '★ ' + esc(g.rating) : '—') + '</span>' +
-          fileTag +
+          '<span class="game-rating">' + (g.rating && g.rating !== '—' ? '★ ' + esc(g.rating) : 'Новинка') + '</span>' +
+          (hasFile
+            ? '<button type="button" class="card-dl-btn" title="' + fileLabel + '"><svg><use href="#i-download"/></svg>Скачать</button>'
+            : '<span class="game-file-tag empty">Без файла</span>') +
         '</div>' +
-      '</div>';
-
-    attach3DTilt(card);
-    card.addEventListener('click', function(){
-      downloadGameFile(g);
-    });
-    return card;
+      '</div>'
+    );
   }
 
-  /* ── Рендер каруселей ─────────────────────────────── */
-  function renderRails(slideSection, slideDir){
-    var PAGE_SIZE = 5;
-    var headings = {
-      new: ['ВЫШЕДШИЕ НОВИНКИ', 'Наиболее популярные релизы', 'ИГРЫ НА ПК ТОРРЕНТ', 'Вышедшие новинки и обновления'],
-      updates: ['СВЕЖИЕ ОБНОВЛЕНИЯ', 'Актуальные патчи и репаки', 'ОБНОВЛЁННЫЕ РАЗДАЧИ', 'Проверенные версии игр'],
-      top: ['ТОП 250 ЛУЧШИХ ИГР', 'Отсортировано по оценкам игроков', 'ЛУЧШЕЕ НА ПК', 'Высокий рейтинг в каталоге'],
-      goty: ['ИГРЫ ГОДА' + (selectedYear !== 'all' ? ' (' + selectedYear + ')' : ''), 'Главные проекты выбранного периода', 'ЛУЧШИЕ РЕЛИЗЫ НА ПК', 'Выбор редакции и сообщества']
-    };
-    var h = headings[activeTab] || headings.new;
-    document.getElementById('releasesHeading').textContent = expectedOnly ? 'ОЖИДАЕМЫЕ РЕЛИЗЫ' : h[0];
-    document.getElementById('releasesSub').textContent = expectedOnly ? 'Скоро в каталоге ArdoUr' : h[1];
-    document.getElementById('pcHeading').textContent = h[2];
-    document.getElementById('pcSub').textContent = h[3];
-
+  function renderRails(slideDir){
     ['releases', 'pc'].forEach(function(section){
       var rail = document.getElementById(section === 'releases' ? 'railReleases' : 'railPc');
       var foot = document.querySelector('.rail-foot[data-rail="' + section + '"]');
-      var dotsWrap = foot ? foot.querySelector('.dots') : null;
-      var items = getFilteredGames(section);
+      var filtered = filterAndSortGames(section);
 
-      var totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
-      if(railPages[section] >= totalPages) railPages[section] = 0;
-      if(railPages[section] < 0) railPages[section] = totalPages - 1;
+      var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if(railOffsets[section] >= totalPages) railOffsets[section] = 0;
+      if(railOffsets[section] < 0) railOffsets[section] = totalPages - 1;
 
-      if(dotsWrap){
-        dotsWrap.innerHTML = '';
-        var dotsCount = Math.max(5, totalPages);
-        for(var d = 0; d < dotsCount; d++){
-          var dot = document.createElement('i');
-          if(d === railPages[section]) dot.className = 'on';
-          (function(idx){
-            dot.addEventListener('click', function(){
-              if(idx >= totalPages) return;
-              var dir = idx > railPages[section] ? 1 : -1;
-              railPages[section] = idx;
-              renderRails(section, dir);
-            });
-          })(d);
-          dotsWrap.appendChild(dot);
-        }
-      }
+      var pageIdx = railOffsets[section];
+      var slice = filtered.slice(pageIdx * PAGE_SIZE, pageIdx * PAGE_SIZE + PAGE_SIZE);
 
       rail.classList.remove('slide-next', 'slide-prev');
-      if(slideSection === section && slideDir){
+      if(slideDir){
         void rail.offsetWidth;
         rail.classList.add(slideDir > 0 ? 'slide-next' : 'slide-prev');
       }
 
       rail.innerHTML = '';
-      var start = railPages[section] * PAGE_SIZE;
-      var pageItems = items.slice(start, start + PAGE_SIZE);
-
-      if(!pageItems.length){
+      if(!slice.length){
         for(var i = 0; i < PAGE_SIZE; i++){
           var empty = document.createElement('div');
           empty.className = 'empty-card';
           empty.innerHTML = '<svg><use href="#i-gamepad"/></svg><span>ПУСТО</span>';
           rail.appendChild(empty);
         }
-        return;
+      } else {
+        slice.forEach(function(g, idx){
+          var card = document.createElement('div');
+          card.className = 'game-card';
+          var rank = activeTab === 'top' ? (pageIdx * PAGE_SIZE + idx + 1) : 0;
+          card.innerHTML = buildCardHtml(g, rank);
+          attach3DTilt(card);
+          card.addEventListener('click', function(e){
+            if(e.target.closest('.card-dl-btn')){
+              e.stopPropagation();
+              triggerGameDownload(g);
+              return;
+            }
+            if(g.fileData || g.fileUrl){
+              triggerGameDownload(g);
+            } else {
+              toast(g.title + (g.date ? ' · ' + g.date : ''));
+            }
+          });
+          rail.appendChild(card);
+        });
       }
 
-      pageItems.forEach(function(g, idx){
-        rail.appendChild(buildGameCardElement(g, start + idx));
-      });
+      /* Точки пагинации */
+      if(foot){
+        var dotsHost = foot.querySelector('.dots');
+        var dotCount = Math.min(8, Math.max(1, totalPages));
+        dotsHost.innerHTML = '';
+        for(var d = 0; d < dotCount; d++){
+          var dot = document.createElement('i');
+          if(d === (pageIdx % dotCount)) dot.className = 'on';
+          (function(targetPage){
+            dot.addEventListener('click', function(){
+              var dir = targetPage >= railOffsets[section] ? 1 : -1;
+              railOffsets[section] = targetPage;
+              renderRails(dir);
+            });
+          })(d);
+          dotsHost.appendChild(dot);
+        }
+      }
     });
   }
 
-  /* Стрелки каруселей */
   document.querySelectorAll('.rail-foot').forEach(function(foot){
     var section = foot.dataset.rail;
     foot.querySelectorAll('.arrow').forEach(function(btn){
       btn.addEventListener('click', function(){
         var dir = Number(btn.dataset.dir) || 1;
-        var items = getFilteredGames(section);
-        var totalPages = Math.max(1, Math.ceil(items.length / 5));
-        railPages[section] = (railPages[section] + dir + totalPages) % totalPages;
-        renderRails(section, dir);
+        var filtered = filterAndSortGames(section);
+        var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        railOffsets[section] = (railOffsets[section] + dir + totalPages) % totalPages;
+        renderRails(dir);
       });
     });
   });
 
-  /* ── Верхние вкладки, год, сортировка и фильтры ──── */
-  var yearGroup = document.getElementById('yearTabGroup');
-  var yearMenu = document.getElementById('yearMenu');
+  /* Верхние вкладки и выпадающее меню года */
+  function updateHeadingsForTab(){
+    var rHead = document.getElementById('releasesHeading');
+    var rSub = document.getElementById('releasesSub');
+    if(expectedOnly){
+      rHead.textContent = 'ОЖИДАЕМЫЕ РЕЛИЗЫ';
+      rSub.textContent = 'Предстоящие игры и анонсы';
+      return;
+    }
+    if(activeTab === 'new'){
+      rHead.textContent = 'ВЫШЕДШИЕ НОВИНКИ';
+      rSub.textContent = 'Наиболее популярные релизы';
+    } else if(activeTab === 'updates'){
+      rHead.textContent = 'СВЕЖИЕ ОБНОВЛЕНИЯ';
+      rSub.textContent = 'Актуальные патчи и обновлённые сборки';
+    } else if(activeTab === 'top'){
+      rHead.textContent = 'ТОП 250 ПО РЕЙТИНГУ';
+      rSub.textContent = 'Лучшие игры каталога ArdoUr по оценкам';
+    } else if(activeTab === 'goty'){
+      rHead.textContent = activeYear === 'all' ? 'ИГРЫ ГОДА' : ('ИГРЫ ' + activeYear + ' ГОДА');
+      rSub.textContent = 'Главные хиты выбранного периода';
+    }
+  }
 
   document.querySelectorAll('#topTabs .tab').forEach(function(tab){
     tab.addEventListener('click', function(e){
-      var mode = tab.dataset.tab;
-      if(mode === 'goty'){
+      var t = tab.dataset.tab;
+      if(t === 'goty'){
         e.stopPropagation();
-        yearGroup.classList.toggle('open');
+        document.getElementById('yearTabGroup').classList.toggle('open');
       } else {
-        yearGroup.classList.remove('open');
+        document.getElementById('yearTabGroup').classList.remove('open');
       }
-      document.querySelectorAll('#topTabs .tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('#topTabs .tab').forEach(function(x){ x.classList.remove('active'); });
       tab.classList.add('active');
-      activeTab = mode;
-      railPages.releases = 0;
-      railPages.pc = 0;
-      renderRails();
+      activeTab = t;
+      expectedOnly = false;
+      railOffsets.releases = 0;
+      railOffsets.pc = 0;
+      updateHeadingsForTab();
+      renderRails(1);
     });
   });
 
-  yearMenu.querySelectorAll('button').forEach(function(btn){
+  document.querySelectorAll('#yearMenu button').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      yearMenu.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+      activeYear = btn.dataset.year;
+      document.querySelectorAll('#yearMenu button').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
-      selectedYear = btn.dataset.year;
-      document.getElementById('gotyLabel').textContent = selectedYear === 'all' ? 'ИГРЫ ГОДА' : 'ИГРЫ ' + selectedYear;
-      yearGroup.classList.remove('open');
-      activeTab = 'goty';
-      document.querySelectorAll('#topTabs .tab').forEach(function(t){ t.classList.remove('active'); });
-      document.getElementById('gotyTabBtn').classList.add('active');
-      renderRails();
+      document.getElementById('gotyLabel').textContent = activeYear === 'all' ? 'ИГРЫ ГОДА' : ('ИГРЫ ' + activeYear);
+      document.getElementById('yearTabGroup').classList.remove('open');
+      railOffsets.releases = 0;
+      railOffsets.pc = 0;
+      updateHeadingsForTab();
+      renderRails(1);
     });
   });
 
   document.getElementById('expectedLink').addEventListener('click', function(e){
     e.preventDefault();
     expectedOnly = !expectedOnly;
-    this.textContent = expectedOnly ? 'ПОКАЗАТЬ ВСЕ РЕЛИЗЫ' : 'ОЖИДАЕМЫЕ РЕЛИЗЫ';
-    renderRails();
+    this.textContent = expectedOnly ? 'ВСЕ НОВИНКИ' : 'ОЖИДАЕМЫЕ РЕЛИЗЫ';
+    railOffsets.releases = 0;
+    updateHeadingsForTab();
+    renderRails(1);
   });
 
   document.getElementById('sortSelect').addEventListener('change', function(e){
-    sortBy = e.target.value;
-    renderRails();
+    activeSort = e.target.value;
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
+    renderRails(1);
   });
 
   document.getElementById('globalSearch').addEventListener('input', function(e){
     searchQuery = e.target.value.trim();
-    railPages.releases = 0;
-    railPages.pc = 0;
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
     renderRails();
   });
 
+  /* Фильтр по жанру / категории из боковой панели */
   function setTagFilter(tag){
     activeTag = (activeTag === tag) ? '' : tag;
     document.querySelectorAll('#sideNavList li, #sideGenreGrid div').forEach(function(el){
@@ -2000,9 +2093,9 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     } else {
       chip.classList.add('hidden');
     }
-    railPages.releases = 0;
-    railPages.pc = 0;
-    renderRails();
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
+    renderRails(1);
   }
 
   document.querySelectorAll('#sideNavList li, #sideGenreGrid div').forEach(function(el){
@@ -2017,11 +2110,13 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
 
   document.getElementById('brandHome').addEventListener('click', function(){
     activeTab = 'new';
-    selectedYear = 'all';
-    expectedOnly = false;
+    activeYear = 'all';
+    activeSort = 'newest';
     activeTag = '';
     searchQuery = '';
-    sortBy = 'newest';
+    expectedOnly = false;
+    railOffsets.releases = 0;
+    railOffsets.pc = 0;
     document.getElementById('globalSearch').value = '';
     document.getElementById('sortSelect').value = 'newest';
     document.getElementById('gotyLabel').textContent = 'ИГРЫ ГОДА';
@@ -2031,109 +2126,18 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     document.querySelectorAll('#topTabs .tab').forEach(function(t){
       t.classList.toggle('active', t.dataset.tab === 'new');
     });
-    renderRails();
+    updateHeadingsForTab();
+    renderRails(1);
   });
 
-  /* ── Глобальные уведомления (колокольчик + баннер) ── */
-  function renderNotifications(){
-    var unread = notifications.filter(function(n){ return readNotifIds.indexOf(n.id) < 0; });
-    var badge = document.getElementById('notifBadge');
-    if(unread.length > 0){
-      badge.textContent = unread.length > 9 ? '9+' : String(unread.length);
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
-    }
-
-    /* Показываем последнее непрочитанное уведомление в баннере на главной */
-    var banner = document.getElementById('liveGlobalBanner');
-    var latestUnread = unread.find(function(n){ return n.id !== dismissedBannerId; });
-    if(latestUnread){
-      document.getElementById('liveBannerTitle').textContent = latestUnread.title;
-      document.getElementById('liveBannerBody').textContent = latestUnread.body;
-      var dlBtn = document.getElementById('liveBannerDownloadBtn');
-      var linked = latestUnread.gameId ? games.find(function(g){ return g.id === latestUnread.gameId; }) : null;
-      if(linked && hasDownloadableFile(linked)){
-        dlBtn.classList.remove('hidden');
-        dlBtn.onclick = function(){ downloadGameFile(linked); };
-      } else {
-        dlBtn.classList.add('hidden');
-      }
-      banner.dataset.notifId = latestUnread.id;
-      banner.classList.remove('hidden');
-    } else {
-      banner.classList.add('hidden');
-    }
-
-    var list = document.getElementById('notifPopList');
-    if(!notifications.length){
-      list.innerHTML = '<div class="empty-note">Пока нет новых уведомлений</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    notifications.slice(0, 25).forEach(function(n){
-      var isRead = readNotifIds.indexOf(n.id) >= 0;
-      var item = document.createElement('div');
-      item.className = 'notif-item' + (isRead ? ' read' : '');
-      var linkedGame = n.gameId ? games.find(function(g){ return g.id === n.gameId; }) : null;
-
-      item.innerHTML =
-        '<div class="notif-item-top">' +
-          '<span class="notif-item-title">' + esc(n.title) + '</span>' +
-          '<span class="notif-item-time">' + esc(formatTime(n.created)) + '</span>' +
-        '</div>' +
-        '<div class="notif-item-body">' + esc(n.body) + '</div>' +
-        (linkedGame ? '<div class="notif-item-foot"><button type="button" class="notif-game-link"><svg><use href="#i-download"/></svg>' + esc(linkedGame.title) + '</button></div>' : '');
-
-      if(linkedGame){
-        item.querySelector('.notif-game-link').addEventListener('click', function(){
-          downloadGameFile(linkedGame);
-        });
-      }
-      list.appendChild(item);
-    });
-  }
-
-  document.getElementById('closeLiveBannerBtn').addEventListener('click', function(){
-    var banner = document.getElementById('liveGlobalBanner');
-    var nid = banner.dataset.notifId;
-    if(nid){
-      dismissedBannerId = nid;
-      if(readNotifIds.indexOf(nid) < 0) readNotifIds.push(nid);
-    }
-    banner.classList.add('hidden');
-    renderNotifications();
-  });
-
-  document.getElementById('notifBtn').addEventListener('click', function(e){
-    e.stopPropagation();
-    document.getElementById('notifPopover').classList.toggle('open');
-  });
-
-  document.getElementById('markAllReadBtn').addEventListener('click', function(){
-    readNotifIds = notifications.map(function(n){ return n.id; });
-    renderNotifications();
-  });
-
-  document.addEventListener('click', function(e){
-    var pop = document.getElementById('notifPopover');
-    if(pop && !pop.contains(e.target) && !document.getElementById('notifBtn').contains(e.target)){
-      pop.classList.remove('open');
-    }
-    if(yearGroup && !yearGroup.contains(e.target)){
-      yearGroup.classList.remove('open');
-    }
-  });
-
-  /* ── Шапка и профиль пользователя ─────────────────── */
+  /* ── Шапка аккаунта и окно входа / регистрации ────── */
   function updateHeaderUI(){
     var adminBtn = document.getElementById('adminBtn');
     var accBtn = document.getElementById('accountBtn');
     adminBtn.classList.toggle('show', isAdmin());
 
     if(session){
-      var initials = (session.name || session.email || 'U').slice(0, 2).toUpperCase();
+      var initials = (session.name || session.email || 'AR').slice(0, 2).toUpperCase();
       accBtn.classList.add('logged');
       accBtn.innerHTML =
         '<span class="avatar-circle' + (isAdmin() ? ' is-admin' : '') + '">' + esc(initials) + '</span>' +
@@ -2144,17 +2148,6 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     }
   }
 
-  function openOverlay(id){ document.getElementById(id).classList.add('open'); }
-  function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
-
-  document.querySelectorAll('[data-close]').forEach(function(btn){
-    btn.addEventListener('click', function(){ closeOverlay(btn.dataset.close); });
-  });
-  document.querySelectorAll('.overlay').forEach(function(ov){
-    ov.addEventListener('click', function(e){ if(e.target === ov) closeOverlay(ov.id); });
-  });
-
-  /* ── Окно входа / регистрации / профиля ───────────── */
   function showAuthError(msg){
     var box = document.getElementById('authErrorBox');
     if(!msg){
@@ -2174,11 +2167,11 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     document.getElementById('authPaneReg').classList.toggle('hidden', !isReg);
     document.getElementById('authModalTitle').textContent = isReg ? 'Регистрация в ArdoUr' : 'Вход в ArdoUr';
     document.getElementById('authModalSub').textContent = isReg
-      ? 'Создайте аккаунт для синхронизации профиля в облаке'
+      ? 'Создайте аккаунт за пару секунд для доступа к профилю'
       : 'Авторизуйтесь, чтобы управлять профилем и синхронизировать статус';
   }
 
-  function syncAuthModalView(){
+  function openAuthModal(){
     showAuthError('');
     var guestView = document.getElementById('authGuestView');
     var profileView = document.getElementById('authProfileView');
@@ -2186,18 +2179,18 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     if(session){
       guestView.classList.add('hidden');
       profileView.classList.remove('hidden');
-      document.getElementById('authModalTitle').textContent = 'Профиль участника';
-      document.getElementById('authModalSub').textContent = 'Учётная запись синхронизирована с проектом ardour-e38a3';
+      document.getElementById('authModalTitle').textContent = 'Профиль ArdoUr';
+      document.getElementById('authModalSub').textContent = 'Учётная запись синхронизирована с облаком';
 
       var card = document.getElementById('profileCard');
       card.classList.toggle('is-admin', isAdmin());
-      document.getElementById('profileAvatar').textContent = (session.name || 'U').slice(0, 2).toUpperCase();
+      document.getElementById('profileAvatar').textContent = (session.name || 'AR').slice(0, 2).toUpperCase();
       document.getElementById('profileName').textContent = session.name;
       document.getElementById('profileEmail').textContent = session.email;
-      document.getElementById('profileJoined').textContent = formatTime(session.created);
+      document.getElementById('profileJoined').textContent = formatJoinDate(session.created);
 
       var roleBadge = document.getElementById('profileRoleBadge');
-      roleBadge.textContent = isAdmin() ? 'АДМИН' : 'ЮЗЕР';
+      roleBadge.textContent = isAdmin() ? 'АДМИН' : 'УЧАСТНИК';
       roleBadge.classList.toggle('admin', isAdmin());
 
       document.getElementById('profileOpenAdmin').classList.toggle('hidden', !isAdmin());
@@ -2206,40 +2199,67 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
       guestView.classList.remove('hidden');
       switchAuthMode(false);
     }
+    openOverlay('authOverlay');
   }
 
-  document.getElementById('accountBtn').addEventListener('click', function(){
-    syncAuthModalView();
-    openOverlay('authOverlay');
-  });
-
+  document.getElementById('accountBtn').addEventListener('click', openAuthModal);
   document.getElementById('authTabLogin').addEventListener('click', function(){ switchAuthMode(false); });
   document.getElementById('authTabReg').addEventListener('click', function(){ switchAuthMode(true); });
 
-  /* Переключение видимости пароля */
+  /* Показ / скрытие пароля */
   document.querySelectorAll('[data-toggle-pass]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var input = document.getElementById(btn.dataset.togglePass);
       if(!input) return;
       var show = input.type === 'password';
       input.type = show ? 'text' : 'password';
-      var useEl = btn.querySelector('use');
-      if(useEl) useEl.setAttribute('href', show ? '#i-eye-off' : '#i-eye');
+      btn.innerHTML = show ? '<svg><use href="#i-eye-off"/></svg>' : '<svg><use href="#i-eye"/></svg>';
     });
   });
 
   /* Индикатор надёжности пароля */
   document.getElementById('regPass').addEventListener('input', function(e){
-    var v = e.target.value || '';
+    var val = e.target.value || '';
     var score = 0;
-    if(v.length >= 4) score++;
-    if(v.length >= 7) score++;
-    if(/[A-ZА-Я0-9]/.test(v)) score++;
-    if(/[^A-Za-zА-Яа-я0-9]/.test(v) || v.length >= 10) score++;
-    var labels = ['Надёжность пароля', 'Слабый пароль', 'Средний пароль', 'Хороший пароль', 'Отличный пароль'];
+    if(val.length >= 4) score++;
+    if(val.length >= 7) score++;
+    if(/[A-ZА-Я0-9]/.test(val)) score++;
+    if(/[^A-Za-zА-Яа-я0-9]/.test(val) || val.length >= 10) score++;
+    var labels = ['Надёжность пароля', 'Слабый пароль', 'Средний пароль', 'Хороший пароль', 'Надёжный пароль'];
     document.getElementById('passStrengthMeter').dataset.lvl = String(score);
     document.getElementById('passStrengthLabel').textContent = labels[score];
   });
+
+  /* Синхронизация одного документа с Firestore */
+  async function syncDoc(colName, docId, payload){
+    if(!db || !fbUser) return false;
+    try{
+      await setDoc(getDocRef(colName, docId), payload);
+      cloudWriteError = '';
+      updateDiagBanner();
+      return true;
+    }catch(err){
+      console.error('Firestore write error:', err);
+      cloudWriteError = (err && (err.code || err.message)) || 'Ошибка записи Firestore';
+      updateDiagBanner();
+      return false;
+    }
+  }
+
+  async function removeDoc(colName, docId){
+    if(!db || !fbUser) return false;
+    try{
+      await deleteDoc(getDocRef(colName, docId));
+      cloudWriteError = '';
+      updateDiagBanner();
+      return true;
+    }catch(err){
+      console.error('Firestore delete error:', err);
+      cloudWriteError = (err && (err.code || err.message)) || 'Ошибка удаления Firestore';
+      updateDiagBanner();
+      return false;
+    }
+  }
 
   document.getElementById('authPaneLogin').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -2249,28 +2269,43 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
       showAuthError('Заполните почту и пароль');
       return;
     }
-    var user = users.find(function(u){ return (u.email || '').toLowerCase() === email; });
-    if(!user){
-      showAuthError('Аккаунт с такой почтой не найден');
-      return;
-    }
-    if(email === ADMIN_EMAIL){
-      user.role = 'admin';
-      if(!user.pass){
-        user.pass = hashPass(pass);
+
+    var loginBtn = document.getElementById('loginBtn');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Вход...';
+
+    try{
+      if(initPromise) await initPromise;
+      await refreshUsersFromCloud();
+
+      var user = users.find(function(u){ return (u.email || '').toLowerCase() === email; });
+      if(!user){
+        showAuthError('Аккаунт с такой почтой не найден');
+        return;
+      }
+      if(email === ADMIN_EMAIL){
+        user.role = 'admin';
+        if(!user.pass){
+          user.pass = hashPass(pass);
+        } else if(user.pass !== hashPass(pass)){
+          showAuthError('Неверный пароль');
+          return;
+        }
+        await syncDoc('ardour_users', user.id, user);
       } else if(user.pass !== hashPass(pass)){
         showAuthError('Неверный пароль');
         return;
       }
-      await syncDoc('ardour_users', user.id, user);
-    } else if(user.pass !== hashPass(pass)){
-      showAuthError('Неверный пароль');
-      return;
+      session = user;
+      lastSessionUserId = user.id;
+      await persistSessionState();
+      updateHeaderUI();
+      closeOverlay('authOverlay');
+      toast('Добро пожаловать, ' + user.name + '!');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Войти в аккаунт';
     }
-    session = user;
-    updateHeaderUI();
-    closeOverlay('authOverlay');
-    toast('Добро пожаловать, ' + user.name + '!');
   });
 
   document.getElementById('authPaneReg').addEventListener('submit', async function(e){
@@ -2286,33 +2321,50 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
       showAuthError('Пароль должен содержать минимум 4 символа');
       return;
     }
-    var existing = users.find(function(u){ return (u.email || '').toLowerCase() === email; });
-    if(existing && existing.id !== 'admin_root'){
-      showAuthError('Пользователь с такой почтой уже зарегистрирован');
-      return;
+
+    var regBtn = document.getElementById('regBtn');
+    regBtn.disabled = true;
+    regBtn.textContent = 'Создание...';
+
+    try{
+      if(initPromise) await initPromise;
+      await refreshUsersFromCloud();
+
+      var existing = users.find(function(u){ return (u.email || '').toLowerCase() === email; });
+      if(existing && existing.id !== 'admin_root'){
+        showAuthError('Пользователь с такой почтой уже зарегистрирован');
+        return;
+      }
+      var newUser = {
+        id: existing ? existing.id : uid(),
+        name: name,
+        email: email,
+        pass: hashPass(pass),
+        role: email === ADMIN_EMAIL ? 'admin' : 'user',
+        created: new Date().toISOString()
+      };
+      if(existing){
+        users = users.map(function(u){ return u.id === existing.id ? newUser : u; });
+      } else {
+        users.push(newUser);
+      }
+      await syncDoc('ardour_users', newUser.id, newUser);
+      session = newUser;
+      lastSessionUserId = newUser.id;
+      await persistSessionState();
+      updateHeaderUI();
+      closeOverlay('authOverlay');
+      toast('Аккаунт создан! Добро пожаловать на ArdoUr');
+    } finally {
+      regBtn.disabled = false;
+      regBtn.textContent = 'Создать аккаунт';
     }
-    var newUser = {
-      id: existing ? existing.id : uid(),
-      name: name,
-      email: email,
-      pass: hashPass(pass),
-      role: email === ADMIN_EMAIL ? 'admin' : 'user',
-      created: new Date().toISOString()
-    };
-    if(existing){
-      users = users.map(function(u){ return u.id === existing.id ? newUser : u; });
-    } else {
-      users.push(newUser);
-    }
-    await syncDoc('ardour_users', newUser.id, newUser);
-    session = newUser;
-    updateHeaderUI();
-    closeOverlay('authOverlay');
-    toast('Аккаунт создан! Добро пожаловать на ArdoUr');
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', function(){
+  document.getElementById('logoutBtn').addEventListener('click', async function(){
     session = null;
+    lastSessionUserId = '';
+    await persistSessionState();
     updateHeaderUI();
     closeOverlay('authOverlay');
     toast('Вы вышли из аккаунта');
@@ -2323,40 +2375,76 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     openAdminPanel();
   });
 
-  /* ── Тема оформления ──────────────────────────────── */
-  document.getElementById('themeToggle').addEventListener('click', function(){
-    document.body.classList.toggle('light');
+  /* ── Панель администратора ─────────────────────────── */
+  var editingGameId = null;
+  var draftCoverData = '';
+  var draftCoverName = '';
+  var draftGameFileData = '';
+  var draftGameFileName = '';
+  var draftGameFileSize = 0;
+
+  function updateDiagBanner(){
+    var banner = document.getElementById('fbDiagBanner');
+    var titleEl = document.getElementById('fbDiagTitle');
+    var textEl = document.getElementById('fbDiagText');
+    var copyBtn = document.getElementById('copyRulesBtn');
+
+    if(!db || !fbUser){
+      banner.className = 'diag-banner';
+      titleEl.textContent = 'Нет авторизации в Firebase (ardour-e38a3)';
+      textEl.textContent = 'Включите Anonymous в Firebase Console → Authentication → Sign-in method.';
+      copyBtn.classList.add('hidden');
+      return;
+    }
+
+    if(cloudWriteError){
+      banner.className = 'diag-banner';
+      titleEl.textContent = 'Ошибка записи в Firestore: ' + cloudWriteError;
+      textEl.textContent = 'Откройте Firebase Console → Firestore Database → Rules и разрешите чтение/запись для request.auth != null.';
+      copyBtn.classList.remove('hidden');
+      return;
+    }
+
+    banner.className = 'diag-banner ok';
+    titleEl.textContent = 'Облако Firebase (ardour-e38a3) подключено и готово к работе';
+    textEl.textContent = 'Все опубликованные игры, файлы и уведомления сразу обновляются у всех пользователей сайта.';
+    copyBtn.classList.add('hidden');
+  }
+
+  document.getElementById('copyRulesBtn').addEventListener('click', function(){
+    var ta = document.createElement('textarea');
+    ta.value = FIRESTORE_RULES_SNIPPET;
+    document.body.appendChild(ta);
+    ta.select();
+    try{
+      document.execCommand('copy');
+      toast('Правила Firestore скопированы в буфер обмена');
+    }catch(e){
+      toast('Не удалось скопировать правила');
+    }
+    document.body.removeChild(ta);
   });
 
-  /* ── Админ-панель: предпросмотр и загрузка файлов ─── */
+  function updateAdminStats(){
+    document.getElementById('statTotalGames').textContent = String(games.length);
+    document.getElementById('statReleases').textContent = String(games.filter(function(g){ return g.section === 'releases'; }).length);
+    document.getElementById('statPc').textContent = String(games.filter(function(g){ return g.section === 'pc'; }).length);
+    document.getElementById('statUsers').textContent = String(users.length);
+  }
+
   function updateLivePreview(){
-    var preview = document.getElementById('livePreviewCard');
-    if(!preview) return;
-    var title = document.getElementById('gTitle').value.trim() || 'Название игры';
-    var date = document.getElementById('gDate').value.trim() || '17 нояб. 2026';
-    var rating = document.getElementById('gRating').value.trim() || '8.5';
-    var badge = document.getElementById('gBadge').value.trim();
-    var tag = document.getElementById('gTag').value.trim();
-    var extUrl = document.getElementById('gFileUrl').value.trim();
-
-    var bgStyle = draftCoverData
-      ? ' style="background-image:url(\'' + esc(draftCoverData) + '\')"'
-      : ' style="background:linear-gradient(135deg,#1e2433 0%,#141822 100%)"';
-
-    var rightBadge = badge ? '<span class="game-badge">' + esc(badge) + '</span>' : '';
-    var hasFile = !!(draftFileData || draftFileUrl || draftRawFile || extUrl);
-    var ext = (draftFileName || 'FILE').split('.').pop().toUpperCase();
-    var fileTag = hasFile
-      ? '<span class="game-file-tag"><svg><use href="#i-download"/></svg>' + esc(ext && ext.length <= 7 ? ext : 'ФАЙЛ') + '</span>'
-      : '<span class="game-file-tag empty">' + esc(tag || 'Каталог') + '</span>';
-
-    preview.innerHTML =
-      '<div class="game-art"' + bgStyle + '><span></span>' + rightBadge + '</div>' +
-      '<div class="game-meta">' +
-        '<div class="game-title">' + esc(title) + '</div>' +
-        '<div class="game-date">' + esc(date) + '</div>' +
-        '<div class="game-foot"><span class="game-rating">★ ' + esc(rating) + '</span>' + fileTag + '</div>' +
-      '</div>';
+    var sample = {
+      title: document.getElementById('gTitle').value.trim() || 'Название игры',
+      date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
+      rating: document.getElementById('gRating').value.trim() || '8.5',
+      badge: document.getElementById('gBadge').value.trim(),
+      tag: document.getElementById('gTag').value,
+      image: draftCoverData,
+      fileData: draftGameFileData,
+      fileName: draftGameFileName,
+      fileUrl: document.getElementById('gFileUrl').value.trim()
+    };
+    document.getElementById('livePreviewCard').innerHTML = buildCardHtml(sample, 0);
   }
 
   ['gTitle', 'gDate', 'gRating', 'gBadge', 'gTag', 'gFileUrl'].forEach(function(id){
@@ -2364,235 +2452,145 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     document.getElementById(id).addEventListener('change', updateLivePreview);
   });
 
-  function setCoverDropUI(name, hint){
-    var drop = document.getElementById('coverDrop');
-    var clearBtn = document.getElementById('clearCoverBtn');
-    if(draftCoverData){
-      drop.classList.add('has-file');
-      document.getElementById('coverFileName').textContent = name || 'Обложка загружена';
-      document.getElementById('coverFileHint').textContent = hint || 'Готово к публикации';
-      clearBtn.classList.remove('hidden');
-    } else {
-      drop.classList.remove('has-file');
-      document.getElementById('coverFileName').textContent = 'Выбрать изображение...';
-      document.getElementById('coverFileHint').textContent = 'PNG, JPG, WEBP';
-      clearBtn.classList.add('hidden');
-    }
-    updateLivePreview();
+  /* Сжатие изображения обложки для быстрой записи в Firestore */
+  function compressImageToDataUrl(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = new Image();
+        img.onload = function(){
+          var maxW = 540;
+          var scale = img.width > maxW ? (maxW / img.width) : 1;
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = reject;
+        img.src = ev.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
-  function setGameFileDropUI(name, hint){
-    var drop = document.getElementById('gameFileDrop');
-    var clearBtn = document.getElementById('clearGameFileBtn');
-    if(draftFileData || draftFileUrl || draftRawFile){
-      drop.classList.add('has-file');
-      document.getElementById('gameFileName').textContent = name || 'Файл загружен';
-      document.getElementById('gameFileHint').textContent = hint || 'Доступно для скачивания';
-      clearBtn.classList.remove('hidden');
-    } else {
-      drop.classList.remove('has-file');
-      document.getElementById('gameFileName').textContent = 'Загрузить .zip или .torrent...';
-      document.getElementById('gameFileHint').textContent = 'До 650 КБ в базу или в Storage';
-      clearBtn.classList.add('hidden');
-    }
-    updateLivePreview();
+  function readFileAsDataUrl(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(ev){ resolve(ev.target.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
-  /* Оптимальное сжатие обложки, чтобы гарантированно уложиться в лимит документа Firestore */
-  document.getElementById('gImageFile').addEventListener('change', function(e){
+  document.getElementById('gImageFile').addEventListener('change', async function(e){
     var file = e.target.files && e.target.files[0];
     if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      var img = new Image();
-      img.onload = function(){
-        var maxW = 420;
-        var scale = img.width > maxW ? (maxW / img.width) : 1;
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        draftCoverData = canvas.toDataURL('image/jpeg', 0.78);
-        setCoverDropUI(file.name, formatBytes(file.size));
-      };
-      img.onerror = function(){
-        draftCoverData = ev.target.result;
-        setCoverDropUI(file.name, formatBytes(file.size));
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+    try{
+      draftCoverData = await compressImageToDataUrl(file);
+      draftCoverName = file.name;
+      document.getElementById('coverDrop').classList.add('has-file');
+      document.getElementById('coverFileName').textContent = file.name;
+      document.getElementById('coverFileHint').textContent = 'Обложка готова к загрузке';
+      document.getElementById('clearCoverBtn').classList.remove('hidden');
+      updateLivePreview();
+    }catch(err){
+      toast('Не удалось прочитать изображение');
+    }
   });
 
   document.getElementById('clearCoverBtn').addEventListener('click', function(e){
     e.stopPropagation();
     draftCoverData = '';
+    draftCoverName = '';
     document.getElementById('gImageFile').value = '';
-    setCoverDropUI('', '');
+    document.getElementById('coverDrop').classList.remove('has-file');
+    document.getElementById('coverFileName').textContent = 'Выбрать изображение...';
+    document.getElementById('coverFileHint').textContent = 'PNG, JPG, WEBP';
+    this.classList.add('hidden');
+    updateLivePreview();
   });
 
-  /* Загрузка .zip или .torrent файла */
-  document.getElementById('gGameFile').addEventListener('change', function(e){
+  var pendingRawGameFile = null;
+  document.getElementById('gGameFile').addEventListener('change', async function(e){
     var file = e.target.files && e.target.files[0];
     if(!file) return;
-    draftRawFile = file;
-    draftFileName = file.name;
-    draftFileSize = file.size;
-    draftFileUrl = '';
+    pendingRawGameFile = file;
+    draftGameFileName = file.name;
+    draftGameFileSize = file.size;
+    document.getElementById('gameFileDrop').classList.add('has-file');
+    document.getElementById('gameFileName').textContent = file.name;
+    document.getElementById('clearGameFileBtn').classList.remove('hidden');
 
     if(file.size <= 620 * 1024){
-      var reader = new FileReader();
-      reader.onload = function(ev){
-        draftFileData = ev.target.result;
-        setGameFileDropUI(file.name, formatBytes(file.size) + ' · готов');
-      };
-      reader.readAsDataURL(file);
+      draftGameFileData = await readFileAsDataUrl(file);
+      document.getElementById('gameFileHint').textContent = formatBytes(file.size) + ' · сохранится в базу Firestore';
     } else {
-      draftFileData = '';
-      setGameFileDropUI(file.name, formatBytes(file.size) + ' · загрузка через Storage');
+      draftGameFileData = '';
+      document.getElementById('gameFileHint').textContent = formatBytes(file.size) + ' · загрузится в Firebase Storage';
     }
+    updateLivePreview();
   });
 
   document.getElementById('clearGameFileBtn').addEventListener('click', function(e){
     e.stopPropagation();
-    draftFileData = '';
-    draftFileUrl = '';
-    draftRawFile = null;
-    draftFileName = '';
-    draftFileSize = 0;
+    pendingRawGameFile = null;
+    draftGameFileData = '';
+    draftGameFileName = '';
+    draftGameFileSize = 0;
     document.getElementById('gGameFile').value = '';
-    setGameFileDropUI('', '');
+    document.getElementById('gameFileDrop').classList.remove('has-file');
+    document.getElementById('gameFileName').textContent = 'Загрузить .zip или .torrent...';
+    document.getElementById('gameFileHint').textContent = 'До 620 КБ в базу или в Storage';
+    this.classList.add('hidden');
+    updateLivePreview();
   });
 
   document.getElementById('sendNotifCheck').addEventListener('change', function(e){
     document.getElementById('notifComposeFields').classList.toggle('hidden', !e.target.checked);
   });
 
-  function resetAdminForm(){
+  function resetGameForm(){
     editingGameId = null;
-    document.getElementById('gameForm').reset();
+    pendingRawGameFile = null;
     draftCoverData = '';
-    draftFileData = '';
-    draftFileUrl = '';
-    draftRawFile = null;
-    draftFileName = '';
-    draftFileSize = 0;
-    setCoverDropUI('', '');
-    setGameFileDropUI('', '');
+    draftCoverName = '';
+    draftGameFileData = '';
+    draftGameFileName = '';
+    draftGameFileSize = 0;
+    document.getElementById('gameForm').reset();
     document.getElementById('sendNotifCheck').checked = true;
     document.getElementById('notifComposeFields').classList.remove('hidden');
+    document.getElementById('coverDrop').classList.remove('has-file');
+    document.getElementById('coverFileName').textContent = 'Выбрать изображение...';
+    document.getElementById('coverFileHint').textContent = 'PNG, JPG, WEBP';
+    document.getElementById('clearCoverBtn').classList.add('hidden');
+    document.getElementById('gameFileDrop').classList.remove('has-file');
+    document.getElementById('gameFileName').textContent = 'Загрузить .zip или .torrent...';
+    document.getElementById('gameFileHint').textContent = 'До 620 КБ в базу или в Storage';
+    document.getElementById('clearGameFileBtn').classList.add('hidden');
     document.getElementById('publishBtnText').textContent = 'Опубликовать игру';
     document.getElementById('cancelEditBtn').classList.add('hidden');
     updateLivePreview();
   }
 
-  document.getElementById('cancelEditBtn').addEventListener('click', resetAdminForm);
+  document.getElementById('cancelEditBtn').addEventListener('click', resetGameForm);
 
-  function updateAdminStats(){
-    document.getElementById('statTotalGames').textContent = games.length;
-    document.getElementById('statReleases').textContent = games.filter(function(g){ return g.section === 'releases'; }).length;
-    document.getElementById('statPc').textContent = games.filter(function(g){ return g.section === 'pc'; }).length;
-    document.getElementById('statUsers').textContent = users.length;
-  }
-
-  function renderAdminGames(){
-    updateAdminStats();
-    var host = document.getElementById('adminGamesList');
-    var q = (document.getElementById('adminGameSearch').value || '').trim().toLowerCase();
-    var sec = document.getElementById('adminSectionFilter').value;
-
-    var filtered = games.filter(function(g){
-      var matchSec = (sec === 'all') || (g.section === sec);
-      var matchQ = !q || (g.title || '').toLowerCase().indexOf(q) >= 0;
-      return matchSec && matchQ;
-    });
-
-    if(!filtered.length){
-      host.innerHTML = '<div class="empty-note">Игры по заданным условиям не найдены</div>';
-      return;
+  async function uploadLargeFileToStorage(file, gameId){
+    if(!storage) return '';
+    try{
+      var sRef = storageRef(storage, 'artifacts/' + appId + '/games/' + gameId + '_' + file.name);
+      await uploadBytes(sRef, file);
+      return await getDownloadURL(sRef);
+    }catch(err){
+      console.warn('Firebase Storage upload error:', err);
+      return '';
     }
-
-    host.innerHTML = '';
-    filtered.forEach(function(g){
-      var row = document.createElement('div');
-      row.className = 'list-row';
-      var thumbStyle = g.image ? ' style="background-image:url(\'' + esc(g.image) + '\')"' : '';
-      var fileBadge = hasDownloadableFile(g)
-        ? '<span class="row-file-badge"><svg><use href="#i-file"/></svg>' + esc(g.fileName || 'Ссылка на файл') + '</span>'
-        : '';
-
-      row.innerHTML =
-        '<div class="row-thumb"' + thumbStyle + '>' + (g.image ? '' : '<svg><use href="#i-gamepad"/></svg>') + '</div>' +
-        '<div class="grow">' +
-          '<div class="name">' + esc(g.title) + '</div>' +
-          '<div class="sub">' +
-            '<span>' + (g.section === 'releases' ? 'Новинки' : 'ПК торрент') + '</span>' +
-            '<span>· ' + esc(g.date || 'без даты') + '</span>' +
-            fileBadge +
-          '</div>' +
-        '</div>' +
-        '<div class="row-btns">' +
-          '<button type="button" class="btn ghost mini" data-edit="' + esc(g.id) + '"><svg><use href="#i-edit"/></svg>Править</button>' +
-          '<button type="button" class="btn danger mini" data-del="' + esc(g.id) + '">Удалить</button>' +
-        '</div>';
-
-      host.appendChild(row);
-    });
-
-    host.querySelectorAll('[data-edit]').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var target = games.find(function(x){ return x.id === btn.dataset.edit; });
-        if(!target) return;
-        editingGameId = target.id;
-        document.getElementById('gSection').value = target.section || 'releases';
-        document.getElementById('gTitle').value = target.title || '';
-        document.getElementById('gDate').value = target.date || '';
-        document.getElementById('gRating').value = target.rating || '';
-        document.getElementById('gBadge').value = target.badge || '';
-        document.getElementById('gTag').value = target.tag || '';
-        document.getElementById('gFileUrl').value = target.fileUrl || '';
-        draftCoverData = target.image || '';
-        draftFileData = target.fileData || '';
-        draftFileUrl = target.fileUrl || '';
-        draftRawFile = null;
-        draftFileName = target.fileName || '';
-        draftFileSize = target.fileSize || 0;
-        setCoverDropUI(draftCoverData ? 'Текущая обложка' : '', draftCoverData ? 'Загружена' : '');
-        setGameFileDropUI(draftFileName, draftFileSize ? formatBytes(draftFileSize) : (draftFileUrl ? 'Внешняя ссылка' : ''));
-        document.getElementById('publishBtnText').textContent = 'Сохранить изменения';
-        document.getElementById('cancelEditBtn').classList.remove('hidden');
-        updateLivePreview();
-        document.getElementById('adminOverlay').querySelector('.modal').scrollTop = 0;
-      });
-    });
-
-    host.querySelectorAll('[data-del]').forEach(function(btn){
-      btn.addEventListener('click', async function(){
-        if(btn.dataset.armed !== '1'){
-          btn.dataset.armed = '1';
-          btn.textContent = 'Точно?';
-          setTimeout(function(){
-            if(btn.parentNode){
-              btn.dataset.armed = '';
-              btn.textContent = 'Удалить';
-            }
-          }, 2500);
-          return;
-        }
-        var id = btn.dataset.del;
-        games = games.filter(function(g){ return g.id !== id; });
-        if(editingGameId === id) resetAdminForm();
-        renderRails();
-        renderAdminGames();
-        var ok = await removeDoc('ardour_games', id);
-        if(ok) toast('Игра удалена из облачного каталога');
-      });
-    });
   }
-
-  document.getElementById('adminGameSearch').addEventListener('input', renderAdminGames);
-  document.getElementById('adminSectionFilter').addEventListener('change', renderAdminGames);
 
   document.getElementById('gameForm').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -2602,125 +2600,224 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
     }
     var title = document.getElementById('gTitle').value.trim();
     if(!title){
-      toast('Введите название игры');
+      toast('Укажите название игры');
       return;
     }
 
     var pubBtn = document.getElementById('publishBtn');
-    var pubLabel = document.getElementById('publishBtnText');
     pubBtn.disabled = true;
-    pubLabel.textContent = 'Сохранение...';
 
     try{
-      var isEdit = !!editingGameId;
+      if(initPromise) await initPromise;
       var gameId = editingGameId || uid();
-      var existing = isEdit ? games.find(function(x){ return x.id === gameId; }) : null;
+      var manualFileUrl = document.getElementById('gFileUrl').value.trim();
+      var finalFileUrl = manualFileUrl;
+      var finalFileData = draftGameFileData;
 
-      var finalFileData = draftFileData || '';
-      var finalFileUrl = document.getElementById('gFileUrl').value.trim() || draftFileUrl || '';
-
-      /* Если выбран крупный файл (> 620 КБ), загружаем его в Firebase Storage */
-      if(draftRawFile && !finalFileData && storage && fbUser){
-        try{
-          var sRef = storageRef(storage, 'artifacts/' + APP_ID + '/files/' + gameId + '_' + draftRawFile.name);
-          await uploadBytes(sRef, draftRawFile);
-          finalFileUrl = await getDownloadURL(sRef);
-        }catch(stErr){
-          toast('Крупный архив не удалось загрузить в Storage (укажите прямую ссылку или .torrent-файл)');
+      if(pendingRawGameFile && !finalFileData){
+        toast('Загрузка крупного файла в облако...');
+        var uploadedUrl = await uploadLargeFileToStorage(pendingRawGameFile, gameId);
+        if(uploadedUrl){
+          finalFileUrl = uploadedUrl;
+        } else if(!manualFileUrl){
+          toast('Файл больше 620 КБ, а Storage не включён. Укажите прямую ссылку или .torrent');
+          return;
         }
       }
 
-      /* Гарантируем, что общий вес документа не превышает 900 КБ (лимит Firestore 1 МБ) */
-      var safeCover = (draftCoverData && draftCoverData.length <= 220000) ? draftCoverData : '';
-      var safeFileData = (finalFileData && (finalFileData.length + safeCover.length) <= 880000) ? finalFileData : '';
+      var existingGame = editingGameId ? games.find(function(x){ return x.id === editingGameId; }) : null;
+      var nowIso = new Date().toISOString();
 
-      var gameObj = {
+      var payload = {
         id: gameId,
         section: document.getElementById('gSection').value,
         title: title,
         date: document.getElementById('gDate').value.trim() || '17 нояб. 2026',
-        rating: document.getElementById('gRating').value.trim() || '8.0',
+        rating: document.getElementById('gRating').value.trim() || '8.5',
         badge: document.getElementById('gBadge').value.trim(),
-        tag: document.getElementById('gTag').value.trim(),
-        image: safeCover,
-        fileData: safeFileData,
-        fileUrl: finalFileUrl,
-        fileName: draftFileName || (finalFileUrl ? 'Скачать архив' : ''),
-        fileSize: draftFileSize || 0,
-        updated: isEdit,
-        updatedAt: new Date().toISOString(),
-        created: (existing && existing.created) ? existing.created : new Date().toISOString()
+        tag: document.getElementById('gTag').value,
+        image: draftCoverData || '',
+        fileName: draftGameFileName || '',
+        fileSize: draftGameFileSize || 0,
+        fileData: finalFileData || '',
+        fileUrl: finalFileUrl || '',
+        created: existingGame ? existingGame.created : nowIso,
+        updatedAt: editingGameId ? nowIso : ''
       };
 
-      /* Мгновенно обновляем локальный интерфейс и отправляем в Firestore */
-      if(isEdit){
-        games = games.map(function(g){ return g.id === gameId ? gameObj : g; });
-      } else {
-        games.unshift(gameObj);
+      var ok = await syncDoc('ardour_games', gameId, payload);
+      if(!ok){
+        toast('Ошибка сохранения в Firebase! Проверьте правила Firestore сверху');
+        return;
       }
-      renderRails();
-      renderAdminGames();
 
-      var savedOk = await syncDoc('ardour_games', gameObj.id, gameObj);
+      /* Локальное немедленное обновление + подписка Firestore для всех */
+      if(editingGameId){
+        games = games.map(function(g){ return g.id === gameId ? payload : g; });
+      } else {
+        games.unshift(payload);
+      }
 
       /* Отправка глобального уведомления всем пользователям */
       if(document.getElementById('sendNotifCheck').checked){
-        var customTitle = document.getElementById('notifCustomTitle').value.trim() ||
-          (isEdit ? 'Обновление: ' + title : 'Новая игра: ' + title);
-        var customText = document.getElementById('notifCustomText').value.trim() ||
-          (hasDownloadableFile(gameObj) ? 'Доступен файл ' + (gameObj.fileName || '') + ' для скачивания' : 'Добавлено в каталог ArdoUr');
-
-        var notifObj = {
+        var customTitle = document.getElementById('notifCustomTitle').value.trim();
+        var customText = document.getElementById('notifCustomText').value.trim();
+        var notifPayload = {
           id: uid(),
-          title: customTitle,
-          body: customText,
-          gameId: gameObj.id,
-          created: new Date().toISOString()
+          gameId: gameId,
+          title: customTitle || (editingGameId ? ('Обновлена игра: ' + title) : ('Новая игра: ' + title)),
+          message: customText || (editingGameId
+            ? ('В каталог ArdoUr загружено обновление для «' + title + '».')
+            : ('Игра «' + title + '» добавлена в каталог и доступна всем пользователям.')),
+          created: nowIso
         };
-        notifications.unshift(notifObj);
-        renderNotifications();
-        await syncDoc('ardour_notifications', notifObj.id, notifObj);
+        await syncDoc('ardour_notifications', notifPayload.id, notifPayload);
+        notifications.unshift(notifPayload);
       }
 
-      resetAdminForm();
-      if(savedOk){
-        toast(isEdit ? 'Изменения сохранены и видны всем!' : 'Игра опубликована в общем каталоге!');
-      }
+      var wasEditing = !!editingGameId;
+      resetGameForm();
+      updateAdminStats();
+      renderAdminGames();
+      renderRails(1);
+      renderNotifications();
+      toast(wasEditing ? 'Изменения сохранены в облаке!' : 'Игра опубликована и видна всем!');
     } finally {
       pubBtn.disabled = false;
-      pubLabel.textContent = editingGameId ? 'Сохранить изменения' : 'Опубликовать игру';
     }
   });
 
-  function renderAdminUsers(){
-    updateAdminStats();
-    var q = (document.getElementById('userSearch').value || '').trim().toLowerCase();
-    var host = document.getElementById('adminUsersList');
-    var found = users.filter(function(u){
-      return !q ||
-        (u.name || '').toLowerCase().indexOf(q) >= 0 ||
-        (u.email || '').toLowerCase().indexOf(q) >= 0;
+  function renderAdminGames(){
+    var host = document.getElementById('adminGamesList');
+    var q = (document.getElementById('adminGameSearch').value || '').trim().toLowerCase();
+    var secFilter = document.getElementById('adminSectionFilter').value;
+
+    var list = games.filter(function(g){
+      var matchSec = secFilter === 'all' || g.section === secFilter;
+      var matchQ = !q || (g.title || '').toLowerCase().indexOf(q) >= 0;
+      return matchSec && matchQ;
     });
 
-    if(!found.length){
-      host.innerHTML = '<div class="empty-note">Участники не найдены</div>';
+    host.innerHTML = '';
+    if(!list.length){
+      host.innerHTML = '<div class="empty-note">Игр по выбранным параметрам пока нет</div>';
       return;
     }
 
-    host.innerHTML = '';
-    found.forEach(function(u){
-      var admin = u.role === 'admin';
+    list.forEach(function(g){
       var row = document.createElement('div');
       row.className = 'list-row';
+      var thumbStyle = g.image ? (' style="background-image:url(' + esc(g.image) + ')"') : '';
+      var hasFile = !!(g.fileData || g.fileUrl);
+      row.innerHTML =
+        '<div class="row-thumb"' + thumbStyle + '>' + (g.image ? '' : '<svg><use href="#i-image"/></svg>') + '</div>' +
+        '<div class="grow">' +
+          '<div class="name">' + esc(g.title) + '</div>' +
+          '<div class="sub">' +
+            '<span>' + (g.section === 'releases' ? 'Новинки' : 'ПК торрент') + '</span>' +
+            '<span>· ' + esc(g.date || 'без даты') + '</span>' +
+            (hasFile ? '<span class="row-file-badge"><svg><use href="#i-file"/></svg>' + esc(g.fileName || 'Ссылка') + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="row-btns">' +
+          '<button type="button" class="btn ghost mini" data-edit="' + esc(g.id) + '"><svg><use href="#i-edit"/></svg>Правка</button>' +
+          '<button type="button" class="btn danger mini" data-del="' + esc(g.id) + '">Удалить</button>' +
+        '</div>';
+      host.appendChild(row);
+    });
+
+    host.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var g = games.find(function(x){ return x.id === btn.dataset.edit; });
+        if(!g) return;
+        editingGameId = g.id;
+        document.getElementById('gSection').value = g.section || 'releases';
+        document.getElementById('gTitle').value = g.title || '';
+        document.getElementById('gDate').value = g.date || '';
+        document.getElementById('gRating').value = g.rating || '';
+        document.getElementById('gBadge').value = g.badge || '';
+        document.getElementById('gTag').value = g.tag || '';
+        document.getElementById('gFileUrl').value = g.fileUrl || '';
+
+        draftCoverData = g.image || '';
+        draftCoverName = g.image ? 'Текущая обложка' : '';
+        if(draftCoverData){
+          document.getElementById('coverDrop').classList.add('has-file');
+          document.getElementById('coverFileName').textContent = 'Текущая обложка';
+          document.getElementById('clearCoverBtn').classList.remove('hidden');
+        } else {
+          document.getElementById('coverDrop').classList.remove('has-file');
+          document.getElementById('coverFileName').textContent = 'Выбрать изображение...';
+          document.getElementById('clearCoverBtn').classList.add('hidden');
+        }
+
+        draftGameFileData = g.fileData || '';
+        draftGameFileName = g.fileName || '';
+        draftGameFileSize = g.fileSize || 0;
+        if(draftGameFileName || draftGameFileData){
+          document.getElementById('gameFileDrop').classList.add('has-file');
+          document.getElementById('gameFileName').textContent = draftGameFileName || 'Прикреплённый файл';
+          document.getElementById('clearGameFileBtn').classList.remove('hidden');
+        } else {
+          document.getElementById('gameFileDrop').classList.remove('has-file');
+          document.getElementById('gameFileName').textContent = 'Загрузить .zip или .torrent...';
+          document.getElementById('clearGameFileBtn').classList.add('hidden');
+        }
+
+        document.getElementById('publishBtnText').textContent = 'Сохранить изменения';
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+        updateLivePreview();
+      });
+    });
+
+    host.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        var id = btn.dataset.del;
+        var ok = await removeDoc('ardour_games', id);
+        if(!ok){
+          toast('Не удалось удалить игру из облака');
+          return;
+        }
+        games = games.filter(function(g){ return g.id !== id; });
+        if(editingGameId === id) resetGameForm();
+        updateAdminStats();
+        renderAdminGames();
+        renderRails();
+        toast('Игра удалена из каталога');
+      });
+    });
+  }
+
+  document.getElementById('adminGameSearch').addEventListener('input', renderAdminGames);
+  document.getElementById('adminSectionFilter').addEventListener('change', renderAdminGames);
+
+  function renderAdminUsers(){
+    var host = document.getElementById('adminUsersList');
+    var q = (document.getElementById('userSearch').value || '').trim().toLowerCase();
+    var filtered = users.filter(function(u){
+      return !q || (u.name || '').toLowerCase().indexOf(q) >= 0 || (u.email || '').toLowerCase().indexOf(q) >= 0;
+    });
+
+    host.innerHTML = '';
+    if(!filtered.length){
+      host.innerHTML = '<div class="empty-note">Пользователи не найдены</div>';
+      return;
+    }
+
+    filtered.forEach(function(u){
+      var row = document.createElement('div');
+      row.className = 'list-row';
+      var userIsAdmin = u.role === 'admin';
+      var isRoot = (u.email || '').toLowerCase() === ADMIN_EMAIL;
       row.innerHTML =
         '<div class="grow">' +
-          '<div class="name">' + esc(u.name) + '</div>' +
+          '<div class="name">' + esc(u.name || 'Участник') + '</div>' +
           '<div class="sub">' + esc(u.email) + '</div>' +
         '</div>' +
-        '<span class="role ' + (admin ? 'admin' : '') + '">' + (admin ? 'АДМИН' : 'ЮЗЕР') + '</span>' +
-        '<button type="button" class="btn ghost mini" data-role="' + esc(u.id) + '">' +
-          (admin ? 'Снять админа' : 'Назначить админом') +
-        '</button>';
+        '<span class="role' + (userIsAdmin ? ' admin' : '') + '">' + (userIsAdmin ? 'АДМИН' : 'ЮЗЕР') + '</span>' +
+        (isRoot
+          ? '<span class="role admin">ВЛАДЕЛЕЦ</span>'
+          : '<button type="button" class="btn ghost mini" data-role="' + esc(u.id) + '">' + (userIsAdmin ? 'Снять админку' : 'Дать админку') + '</button>');
       host.appendChild(row);
     });
 
@@ -2728,18 +2825,14 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
       btn.addEventListener('click', async function(){
         var target = users.find(function(x){ return x.id === btn.dataset.role; });
         if(!target) return;
-        if((target.email || '').toLowerCase() === ADMIN_EMAIL){
-          toast('Права главного администратора защищены');
-          return;
-        }
         target.role = target.role === 'admin' ? 'user' : 'admin';
-        var ok = await syncDoc('ardour_users', target.id, target);
+        await syncDoc('ardour_users', target.id, target);
+        renderAdminUsers();
         if(session && session.id === target.id){
           session = target;
           updateHeaderUI();
         }
-        renderAdminUsers();
-        if(ok) toast('Роль участника обновлена');
+        toast('Права пользователя обновлены');
       });
     });
   }
@@ -2747,75 +2840,121 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
   document.getElementById('userSearch').addEventListener('input', renderAdminUsers);
 
   function switchAdminTab(tab){
-    document.getElementById('adminPaneGames').classList.toggle('hidden', tab !== 'games');
-    document.getElementById('adminPaneUsers').classList.toggle('hidden', tab !== 'users');
-    document.getElementById('adminTabGames').classList.toggle('active', tab === 'games');
-    document.getElementById('adminTabUsers').classList.toggle('active', tab === 'users');
+    var isGames = tab === 'games';
+    document.getElementById('adminTabGames').classList.toggle('active', isGames);
+    document.getElementById('adminTabUsers').classList.toggle('active', !isGames);
+    document.getElementById('adminPaneGames').classList.toggle('hidden', !isGames);
+    document.getElementById('adminPaneUsers').classList.toggle('hidden', isGames);
+    if(isGames){
+      renderAdminGames();
+    } else {
+      renderAdminUsers();
+    }
   }
 
   function openAdminPanel(){
     if(!isAdmin()){
-      toast('Доступ только для администраторов');
+      toast('Доступ только для администратора');
       return;
     }
-    switchAdminTab('games');
     updateDiagBanner();
+    updateAdminStats();
     updateLivePreview();
-    renderAdminGames();
-    renderAdminUsers();
+    switchAdminTab('games');
     openOverlay('adminOverlay');
   }
 
   document.getElementById('adminBtn').addEventListener('click', openAdminPanel);
   document.getElementById('adminTabGames').addEventListener('click', function(){ switchAdminTab('games'); });
-  document.getElementById('adminTabUsers').addEventListener('click', function(){
-    switchAdminTab('users');
-    renderAdminUsers();
+  document.getElementById('adminTabUsers').addEventListener('click', function(){ switchAdminTab('users'); });
+
+  /* ── Инициализация Firebase и подписки в реальном времени ── */
+  window.addEventListener('unhandledrejection', function(ev){
+    var reason = ev && ev.reason;
+    var msg = reason && (reason.code || reason.message || String(reason));
+    if(msg && String(msg).indexOf('analytics/config-fetch-failed') >= 0){
+      ev.preventDefault();
+    }
   });
 
-  /* ── Инициализация Firebase: строго сначала Auth, затем Firestore ── */
   async function initFirebase(){
     var pill = document.getElementById('fbStatusPill');
     var label = document.getElementById('fbStatusText');
-
     try{
-      var app = initializeApp(FIREBASE_CONFIG);
-      if(FIREBASE_CONFIG.measurementId && typeof __firebase_config === 'undefined'){
-        isAnalyticsSupported().then(function(supported){
-          if(supported) getAnalytics(app);
-        }).catch(function(){});
-      }
+      var app = initializeApp(firebaseConfig);
       fbAuth = getAuth(app);
       db = getFirestore(app);
-      storage = getStorage(app);
+      try{ storage = getStorage(app); }catch(e){}
 
-      /* Шаг 1: обязательная аутентификация перед любыми запросами к Firestore */
+      if(!isInjectedEnv){
+        isAnalyticsSupported().then(function(ok){
+          if(ok){
+            try{ getAnalytics(app); }catch(e){}
+          }
+        }).catch(function(){});
+      }
+
+      /* Шаг 1: обязательная авторизация в Firebase Auth */
       if(typeof __initial_auth_token !== 'undefined' && __initial_auth_token){
         await signInWithCustomToken(fbAuth, __initial_auth_token);
       } else {
         await signInAnonymously(fbAuth);
       }
       fbUser = fbAuth.currentUser;
-      if(!fbUser) return;
 
       pill.classList.add('online');
       label.textContent = 'ardour-e38a3 · в сети';
       updateDiagBanner();
+
+      /* Автоматическое восстановление сохранённого профиля при входе/обновлении страницы */
+      try{
+        var restoredUserId = '';
+        var sessSnap = await getDoc(getDocRef('ardour_sessions', fbUser.uid));
+        if(sessSnap.exists()){
+          var sessData = sessSnap.data() || {};
+          if(Array.isArray(sessData.readNotifIds)){
+            readNotifIds = sessData.readNotifIds;
+          }
+          if(sessData.userId){
+            restoredUserId = sessData.userId;
+          }
+        }
+        if(!restoredUserId && lastSessionUserId){
+          restoredUserId = lastSessionUserId;
+        }
+        if(restoredUserId){
+          lastSessionUserId = restoredUserId;
+          var userSnap = await getDoc(getDocRef('ardour_users', restoredUserId));
+          if(userSnap.exists()){
+            session = userSnap.data();
+            if((session.email || '').toLowerCase() === ADMIN_EMAIL){
+              session.role = 'admin';
+            }
+            setLocalFallbackUid(session.id);
+            updateHeaderUI();
+          }
+        }
+      }catch(sessErr){
+        console.warn('Session restore warning:', sessErr);
+      }
 
       /* Шаг 2: подписка на общий каталог игр в реальном времени */
       onSnapshot(getColRef('ardour_games'), function(snap){
         var cloudGames = [];
         snap.forEach(function(d){ cloudGames.push(d.data()); });
         cloudGames.sort(function(a, b){
-          return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
+          return String(b.created || '').localeCompare(String(a.created || ''));
         });
         games = cloudGames;
         renderRails();
+        renderNotifications();
+        updateAdminStats();
         if(document.getElementById('adminOverlay').classList.contains('open')){
           renderAdminGames();
         }
       }, function(err){
-        cloudWriteError = 'Нет доступа к чтению каталога Firestore (' + (err && err.code ? err.code : err) + ').';
+        console.warn('Games snapshot error:', err);
+        cloudWriteError = (err && (err.code || err.message)) || 'Нет доступа к Firestore';
         updateDiagBanner();
       });
 
@@ -2827,10 +2966,18 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
           users = cloudUsers;
         }
         ensureAdminUser();
-        if(session){
-          session = users.find(function(u){ return u.id === session.id; }) || session;
-          updateHeaderUI();
+        var activeUid = (session && session.id) || lastSessionUserId;
+        if(activeUid){
+          var matched = users.find(function(u){ return u.id === activeUid; });
+          if(matched){
+            if((matched.email || '').toLowerCase() === ADMIN_EMAIL){
+              matched.role = 'admin';
+            }
+            session = matched;
+            updateHeaderUI();
+          }
         }
+        updateAdminStats();
         if(document.getElementById('adminOverlay').classList.contains('open')){
           renderAdminUsers();
         }
@@ -2839,28 +2986,21 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
       });
 
       /* Шаг 4: подписка на глобальные уведомления */
-      var firstNotifLoad = true;
       onSnapshot(getColRef('ardour_notifications'), function(snap){
         var cloudNotifs = [];
         snap.forEach(function(d){ cloudNotifs.push(d.data()); });
         cloudNotifs.sort(function(a, b){
-          return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
+          return String(b.created || '').localeCompare(String(a.created || ''));
         });
-        if(!firstNotifLoad && cloudNotifs.length > notifications.length && cloudNotifs[0]){
-          toast('🔔 ' + cloudNotifs[0].title);
-        }
-        firstNotifLoad = false;
         notifications = cloudNotifs;
         renderNotifications();
       }, function(err){
         console.warn('Notifications snapshot error:', err);
       });
-
     }catch(err){
-      var code = (err && err.code) ? err.code : String(err);
-      pill.classList.remove('online');
-      label.textContent = 'ошибка Firebase';
-      cloudWriteError = 'Не удалось выполнить вход в Firebase (' + code + '). Проверьте, включён ли Anonymous Sign-in в консоли ardour-e38a3.';
+      console.warn('Firebase init error:', err);
+      label.textContent = 'ardour-e38a3 · ошибка входа';
+      cloudWriteError = (err && (err.code || err.message)) || 'Включите Anonymous в Firebase Auth';
       updateDiagBanner();
     }
   }
@@ -2869,7 +3009,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "http
   renderRails();
   renderNotifications();
   updateHeaderUI();
-  initFirebase();
+  initPromise = initFirebase();
 })();
 </script>
 </body>
